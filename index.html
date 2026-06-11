@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#1a1a2e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="21+ 打卡APP - 坚持21天，养成好习惯">
+  <title>21+ 打卡</title>
+  <style>
+    :root {
+      --primary: #1a1a2e;
+      --secondary: #16213e;
+      --accent: #ff6b35;
+      --success: #4ade80;
+      --text-primary: #ffffff;
+      --text-secondary: #94a3b8;
+      --bg-card: #1f2937;
+      --border: #374151;
+      --shadow: rgba(0, 0, 0, 0.3);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #app { max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; }
+    .page { padding: 20px; padding-bottom: 100px; min-height: 100vh; }
+    .header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+    .header-content { flex: 1; display: flex; align-items: center; gap: 12px; }
+    .header-icon { font-size: 28px; }
+    .header-title { font-size: 20px; font-weight: 600; }
+    .header-actions { display: flex; gap: 8px; }
+    .header-spacer { width: 40px; }
+    .title {
+      font-size: 32px; font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), #ff8c5a);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .subtitle { color: var(--text-secondary); font-size: 14px; margin-top: 4px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 12px 24px; border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), #ff8c5a); color: white; }
+    .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text-primary); }
+    .btn-block { width: 100%; }
+    .btn-add {
+      background: linear-gradient(135deg, var(--accent), #ff8c5a); color: white;
+      padding: 16px 32px; font-size: 18px; border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
+    }
+    .btn-checkin {
+      background: var(--bg-card); color: var(--text-primary);
+      border: 2px solid var(--border); padding: 10px 20px;
+      border-radius: 12px; font-weight: 600; min-width: 80px;
+    }
+    .btn-checkin.checked { background: var(--success); border-color: var(--success); color: var(--primary); }
+    .btn-back {
+      background: var(--bg-card); border: none; color: var(--text-primary);
+      width: 40px; height: 40px; border-radius: 12px; font-size: 20px;
+    }
+    .btn-icon-only {
+      background: var(--bg-card); border: none; color: var(--text-primary);
+      width: 40px; height: 40px; border-radius: 12px; font-size: 16px;
+    }
+    .btn-calendar-nav {
+      background: var(--bg-card); border: none; color: var(--text-primary);
+      width: 36px; height: 36px; border-radius: 10px; font-size: 16px;
+    }
+    .btn-calendar-nav:disabled { opacity: 0.3; cursor: not-allowed; }
+    .bottom-actions {
+      position: fixed; bottom: 80px; left: 0; right: 0;
+      display: flex; justify-content: center; padding: 0 20px; z-index: 10;
+    }
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      display: flex; justify-content: space-around;
+      background: var(--secondary); border-top: 1px solid var(--border);
+      padding: 8px 0; padding-bottom: max(8px, env(safe-area-inset-bottom));
+      z-index: 100;
+    }
+    .nav-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      background: none; border: none; color: var(--text-secondary);
+      padding: 8px 24px; border-radius: 12px;
+    }
+    .nav-btn.active { color: var(--accent); }
+    .nav-icon { font-size: 20px; }
+    .habit-list { display: flex; flex-direction: column; gap: 16px; }
+    .empty-state { text-align: center; padding: 60px 20px; }
+    .empty-icon { font-size: 64px; margin-bottom: 16px; }
+    .empty-state h3 { font-size: 20px; margin-bottom: 8px; }
+    .empty-state p { color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
+    .habit-card {
+      display: flex; align-items: center; gap: 16px;
+      background: var(--bg-card); padding: 16px; border-radius: 16px;
+      box-shadow: 0 4px 16px var(--shadow);
+    }
+    .habit-info { flex: 1; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+    .habit-icon {
+      font-size: 32px; width: 48px; height: 48px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255, 255, 255, 0.05); border-radius: 12px;
+    }
+    .habit-details { flex: 1; }
+    .habit-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .habit-streak { font-size: 13px; color: var(--accent); font-weight: 500; }
+    .habit-progress-ring { width: 48px; height: 48px; position: relative; }
+    .habit-progress-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .ring-bg { fill: none; stroke: rgba(255, 255, 255, 0.1); stroke-width: 3; }
+    .ring-fill { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; transition: stroke-dasharray 0.5s ease; }
+    .ring-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 10px; font-weight: 600; color: var(--text-secondary); }
+    .stats-card { display: flex; justify-content: space-around; background: var(--bg-card); padding: 20px; border-radius: 16px; margin-bottom: 20px; }
+    .stat-item { text-align: center; }
+    .stat-value { display: block; font-size: 28px; font-weight: 700; color: var(--accent); }
+    .stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+    .progress-section { margin-bottom: 24px; }
+    .progress-bar { height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #ff8c5a); border-radius: 4px; transition: width 0.5s ease; }
+    .progress-text { text-align: center; font-size: 14px; color: var(--text-secondary); }
+    .calendar-container { background: var(--bg-card); border-radius: 16px; padding: 16px; }
+    .calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .calendar-header h3 { font-size: 16px; font-weight: 600; }
+    .calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 8px; }
+    .weekday { text-align: center; font-size: 12px; color: var(--text-secondary); padding: 8px 0; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .calendar-day {
+      aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      border-radius: 10px; font-size: 14px; position: relative;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .calendar-day.empty { background: transparent; }
+    .calendar-day.checked { background: var(--success); color: var(--primary); }
+    .calendar-day.today { border: 2px solid var(--accent); }
+    .calendar-day.future { opacity: 0.3; }
+    .check-mark { font-size: 10px; position: absolute; bottom: 2px; }
+    .form { display: flex; flex-direction: column; gap: 24px; }
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
+    .form-label { font-size: 14px; font-weight: 600; color: var(--text-secondary); }
+    .form-input {
+      background: var(--bg-card); border: 2px solid var(--border); border-radius: 12px;
+      padding: 14px 16px; font-size: 16px; color: var(--text-primary);
+    }
+    .form-input:focus { outline: none; border-color: var(--accent); }
+    .icon-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .icon-option {
+      aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+      font-size: 28px; background: var(--bg-card); border: 2px solid var(--border);
+      border-radius: 12px; cursor: pointer;
+    }
+    .icon-option.selected { border-color: var(--accent); background: rgba(255, 107, 53, 0.2); }
+    .settings-list { display: flex; flex-direction: column; gap: 24px; }
+    .settings-group-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    .settings-item { display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); padding: 16px; border-radius: 12px; margin-bottom: 12px; }
+    .settings-item-info { display: flex; align-items: center; gap: 12px; }
+    .settings-icon { font-size: 24px; }
+    .settings-item-title { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+    .settings-item-desc { font-size: 12px; color: var(--text-secondary); }
+    .settings-item.about { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .app-name { font-size: 16px; font-weight: 600; }
+    .app-version { font-size: 12px; color: var(--text-secondary); }
+    .app-desc { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center;
+      z-index: 1000; padding: 20px;
+    }
+    .modal-content { background: var(--bg-card); border-radius: 16px; padding: 24px; max-width: 320px; width: 100%; }
+    .modal-message { font-size: 16px; text-align: center; margin-bottom: 20px; line-height: 1.5; }
+    .modal-buttons { display: flex; gap: 12px; }
+    .modal-buttons .btn { flex: 1; }
+    .btn-cancel { background: var(--border); color: var(--text-primary); }
+    .btn-confirm { background: var(--accent); color: white; }
+    .toast {
+      position: fixed; bottom: 100px; left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--bg-card); color: var(--text-primary);
+      padding: 12px 24px; border-radius: 12px; font-size: 14px;
+      box-shadow: 0 4px 20px var(--shadow); z-index: 1001;
+      opacity: 0; transition: all 0.3s ease;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .celebration {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(26, 26, 46, 0.95); display: flex;
+      align-items: center; justify-content: center; z-index: 1000;
+    }
+    .celebration-content { text-align: center; }
+    .celebration h2 { font-size: 80px; margin-bottom: 16px; animation: bounce 1s ease infinite; }
+    .celebration p { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+    .celebration-sub { font-size: 16px; color: var(--text-secondary); }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+    @media (max-width: 380px) {
+      .habit-card { flex-wrap: wrap; }
+      .habit-progress-ring { order: -1; width: 40px; height: 40px; }
+      .btn-checkin { width: 100%; margin-top: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    const STORAGE_KEY = 'habits';
+    const ICONS = ['💪', '📚', '🏃', '💧', '🧘', '💤', '🥗', '✍️', '🎯', '🌅', '😴', '🚭', '💰', '🎨', '🎵'];
+    const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
+    const MONTHS = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
+
+    function generateId() { return 'h_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9); }
+    function getToday() { return formatDate(new Date()); }
+    function formatDate(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+    function showToast(message, duration = 2000) {
+      const existing = document.querySelector('.toast');
+      if (existing) existing.remove();
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      requestAnimationFrame(() => toast.classList.add('show'));
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, duration);
+    }
+    function showConfirm(message) {
+      return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.innerHTML = `
+          <div class="modal-content">
+            <p class="modal-message">${message}</p>
+            <div class="modal-buttons">
+              <button class="btn btn-cancel" data-action="cancel">取消</button>
+              <button class="btn btn-confirm" data-action="confirm">确认</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+        const handleClick = (e) => {
+          const action = e.target.dataset.action;
+          if (action) {
+            overlay.remove();
+            document.removeEventListener('click', handleClick);
+            resolve(action === 'confirm');
+          }
+        };
+        document.addEventListener('click', handleClick);
+      });
+    }
+
+    const StorageService = {
+      saveHabits(habits) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(habits)); return true; }
+        catch (e) { return false; }
+      },
+      loadHabits() {
+        try { const data = localStorage.getItem(STORAGE_KEY); return data ? JSON.parse(data) : []; }
+        catch (e) { return []; }
+      },
+      exportData() {
+        const habits = this.loadHabits();
+        return JSON.stringify({ version: '1.0', exportDate: new Date().toISOString(), habits }, null, 2);
+      },
+      importData(jsonStr) {
+        try {
+          const data = JSON.parse(jsonStr);
+          if (!data.habits || !Array.isArray(data.habits)) throw new Error('数据格式无效');
+          data.habits.forEach(h => { if (!h.id || !h.name || !h.createdAt) throw new Error('数据不完整'); });
+          this.saveHabits(data.habits);
+          return { success: true, count: data.habits.length };
+        } catch (e) { return { success: false, error: e.message }; }
+      }
+    };
+
+    const HabitManager = {
+      getAll() { return StorageService.loadHabits(); },
+      getHabit(id) { return this.getAll().find(h => h.id === id); },
+      addHabit(name, icon = '📌') {
+        const habits = this.getAll();
+        const newHabit = { id: generateId(), name: name.trim(), icon, createdAt: getToday(), checkinDates: [] };
+        habits.push(newHabit);
+        StorageService.saveHabits(habits);
+        return newHabit;
+      },
+      updateHabit(id, data) {
+        const habits = this.getAll();
+        const index = habits.findIndex(h => h.id === id);
+        if (index === -1) return null;
+        if (data.name !== undefined) habits[index].name = data.name.trim();
+        if (data.icon !== undefined) habits[index].icon = data.icon;
+        StorageService.saveHabits(habits);
+        return habits[index];
+      },
+      removeHabit(id) {
+        const habits = this.getAll();
+        const index = habits.findIndex(h => h.id === id);
+        if (index === -1) return false;
+        habits.splice(index, 1);
+        StorageService.saveHabits(habits);
+        return true;
+      },
+      hasCheckedIn(habit, date) { return habit.checkinDates.includes(date); },
+      checkin(habitId, date) {
+        const habits = this.getAll();
+        const habit = habits.find(h => h.id === habitId);
+        if (!habit) return false;
+        if (!habit.checkinDates.includes(date)) {
+          habit.checkinDates.push(date);
+          habit.checkinDates.sort();
+          StorageService.saveHabits(habits);
+        }
+        return true;
+      },
+      uncheckin(habitId, date) {
+        const habits = this.getAll();
+        const habit = habits.find(h => h.id === habitId);
+        if (!habit) return false;
+        const index = habit.checkinDates.indexOf(date);
+        if (index > -1) {
+          habit.checkinDates.splice(index, 1);
+          StorageService.saveHabits(habits);
+        }
+        return true;
+      },
+      getStreak(habit) {
+        if (!habit.checkinDates || habit.checkinDates.length === 0) return 0;
+        const sortedDates = [...habit.checkinDates].sort().reverse();
+        let streak = 0;
+        let currentDate = sortedDates[0] === getToday() ? new Date() : new Date(Date.now() - 86400000);
+        for (const dateStr of sortedDates) {
+          const expected = formatDate(currentDate);
+          if (dateStr === expected) { streak++; currentDate = new Date(currentDate - 86400000); }
+          else if (dateStr < expected) break;
+        }
+        return streak;
+      },
+      getProgress(habit) {
+        const today = getToday();
+        const start = new Date(habit.createdAt);
+        const end = new Date(today);
+        const totalDays = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+        const checkedDays = habit.checkinDates.filter(d => d >= habit.createdAt && d <= today).length;
+        const progress = Math.min((checkedDays / 21) * 100, 100);
+        return { totalDays, checkedDays, progress, remaining: Math.max(0, 21 - checkedDays) };
+      }
+    };
+
+    const CheckinLogic = {
+      checkin(habitId) {
+        const today = getToday();
+        const habit = HabitManager.getHabit(habitId);
+        if (!habit) return { success: false, error: '习惯不存在' };
+        if (HabitManager.hasCheckedIn(habit, today)) return { success: false, error: '今日已打卡' };
+        HabitManager.checkin(habitId, today);
+        const updated = HabitManager.getHabit(habitId);
+        return {
+          success: true,
+          streak: HabitManager.getStreak(updated),
+          progress: HabitManager.getProgress(updated),
+          isCompleted: HabitManager.getProgress(updated).checkedDays >= 21
+        };
+      },
+      uncheckin(habitId, date = getToday()) {
+        const habit = HabitManager.getHabit(habitId);
+        if (!habit) return { success: false, error: '习惯不存在' };
+        if (!HabitManager.hasCheckedIn(habit, date)) return { success: false, error: '该日期未打卡' };
+        HabitManager.uncheckin(habitId, date);
+        const updated = HabitManager.getHabit(habitId);
+        return { success: true, streak: HabitManager.getStreak(updated), progress: HabitManager.getProgress(updated) };
+      },
+      getMonthCalendar(habitId, year, month) {
+        const habit = HabitManager.getHabit(habitId);
+        if (!habit) return null;
+        const firstDay = new Date(year, month, 1);
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const startWeekday = firstDay.getDay();
+        const calendar = [];
+        let week = [];
+        for (let i = 0; i < startWeekday; i++) week.push(null);
+        for (let day = 1; day <= daysInMonth; day++) {
+          const dateStr = formatDate(new Date(year, month, day));
+          week.push({ day, date: dateStr, isChecked: habit.checkinDates.includes(dateStr), isToday: dateStr === getToday(), isFuture: dateStr > getToday() });
+          if (week.length === 7) { calendar.push(week); week = []; }
+        }
+        if (week.length > 0) { while (week.length < 7) week.push(null); calendar.push(week); }
+        return { year, month, weeks: calendar, checkedCount: habit.checkinDates.filter(d => { const [y, m] = d.split('-').map(Number); return y === year && m === month + 1; }).length };
+      },
+      getStats(habitId) {
+        const habit = HabitManager.getHabit(habitId);
+        if (!habit) return null;
+        const today = getToday();
+        const totalDays = Math.floor((new Date(today) - new Date(habit.createdAt)) / (1000 * 60 * 60 * 24)) + 1;
+        const checkedDays = habit.checkinDates.filter(d => d <= today).length;
+        const streak = HabitManager.getStreak(habit);
+        const progress = HabitManager.getProgress(habit);
+        return { totalDays, checkedDays, missedDays: Math.max(0, totalDays - checkedDays), streak, ...progress };
+      }
+    };
+
+    const UI = {
+      getApp() { return document.getElementById('app'); },
+      renderHome() {
+        const habits = HabitManager.getAll();
+        const today = getToday();
+        const html = `
+          <div class="page home-page">
+            <header class="header">
+              <h1 class="title">21+</h1>
+              <p class="subtitle">坚持21天，养成好习惯</p>
+            </header>
+            <div class="habit-list">
+              ${habits.length === 0 ? `
+                <div class="empty-state">
+                  <div class="empty-icon">🌱</div>
+                  <h3>还没有习惯</h3>
+                  <p>点击下方按钮添加第一个习惯<br>开启21天挑战之旅</p>
+                </div>
+              ` : habits.map(h => {
+                const isChecked = HabitManager.hasCheckedIn(h, today);
+                const streak = HabitManager.getStreak(h);
+                const progress = HabitManager.getProgress(h);
+                return `
+                  <div class="habit-card" data-id="${h.id}">
+                    <div class="habit-info" onclick="UI.renderDetail('${h.id}')">
+                      <div class="habit-icon">${h.icon}</div>
+                      <div class="habit-details">
+                        <h3 class="habit-name">${h.name}</h3>
+                        <p class="habit-streak">连续 ${streak} 天</p>
+                      </div>
+                    </div>
+                    <div class="habit-progress-ring" data-progress="${progress.progress}">
+                      <svg viewBox="0 0 36 36">
+                        <path class="ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                        <path class="ring-fill" stroke-dasharray="${progress.progress}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                      </svg>
+                      <span class="ring-text">${Math.round(progress.progress)}%</span>
+                    </div>
+                    <button class="btn-checkin ${isChecked ? 'checked' : ''}" onclick="UI.handleCheckin('${h.id}')">
+                      ${isChecked ? '✓' : '打卡'}
+                    </button>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+            <div class="bottom-actions">
+              <button class="btn btn-add" onclick="UI.renderAddEdit()">
+                <span class="btn-icon">+</span> 添加习惯
+              </button>
+            </div>
+            <nav class="bottom-nav">
+              <button class="nav-btn active" onclick="UI.renderHome()">
+                <span class="nav-icon">🏠</span> <span>首页</span>
+              </button>
+              <button class="nav-btn" onclick="UI.renderSettings()">
+                <span class="nav-icon">⚙️</span> <span>设置</span>
+              </button>
+            </nav>
+          </div>
+        `;
+        this.getApp().innerHTML = html;
+      },
+      handleCheckin(id) {
+        const result = CheckinLogic.checkin(id);
+        if (result.success) {
+          if (result.isCompleted) showToast('🎉 恭喜完成21天挑战！');
+          else showToast(`打卡成功！连续 ${result.streak} 天`);
+          this.renderHome();
+        } else {
+          showToast(result.error);
+        }
+      },
+      renderDetail(id) {
+        const habit = HabitManager.getHabit(id);
+        if (!habit) { this.renderHome(); return; }
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        const calendar = CheckinLogic.getMonthCalendar(id, year, month);
+        const stats = CheckinLogic.getStats(id);
+        const html = `
+          <div class="page detail-page">
+            <header class="header">
+              <button class="btn-back" onclick="UI.renderHome()">←</button>
+              <div class="header-content">
+                <span class="header-icon">${habit.icon}</span>
+                <h1 class="header-title">${habit.name}</h1>
+              </div>
+              <div class="header-actions">
+                <button class="btn-icon-only" onclick="UI.renderAddEdit('${id}')">✏️</button>
+                <button class="btn-icon-only" onclick="UI.handleDelete('${id}')">🗑️</button>
+              </div>
+            </header>
+            <div class="stats-card">
+              <div class="stat-item"><span class="stat-value">${stats.streak}</span><span class="stat-label">连续天数</span></div>
+              <div class="stat-item"><span class="stat-value">${stats.checkedDays}</span><span class="stat-label">已打卡</span></div>
+              <div class="stat-item"><span class="stat-value">${stats.remaining}</span><span class="stat-label">剩余</span></div>
+            </div>
+            <div class="progress-section">
+              <div class="progress-bar"><div class="progress-fill" style="width: ${stats.progress}%"></div></div>
+              <p class="progress-text">${stats.checkedDays >= 21 ? '🎉 挑战完成！' : `已完成 ${stats.checkedDays}/21 天`}</p>
+            </div>
+            <div class="calendar-container">
+              <div class="calendar-header">
+                <button class="btn-calendar-nav" onclick="UI.renderDetailMonth('${id}', ${year}, ${month - 1})">←</button>
+                <h3>${MONTHS[month]} ${year}</h3>
+                <button class="btn-calendar-nav" ${month === now.getMonth() && year === now.getFullYear() ? 'disabled' : ''} onclick="UI.renderDetailMonth('${id}', ${year}, ${month + 1})">→</button>
+              </div>
+              <div class="calendar-weekdays">${WEEKDAYS.map(d => `<div class="weekday">${d}</div>`).join('')}</div>
+              <div class="calendar-grid" id="calendarGrid">
+                ${calendar.weeks.map(week => week.map(day => day === null ? `<div class="calendar-day empty"></div>` : `
+                  <div class="calendar-day ${day.isChecked ? 'checked' : ''} ${day.isToday ? 'today' : ''} ${day.isFuture ? 'future' : ''}"
+                       ${!day.isFuture && day.isChecked ? `onclick="UI.handleUncheckin('${id}', '${day.date}')"` : ''}>
+                    <span class="day-number">${day.day}</span>
+                    ${day.isChecked ? '<span class="check-mark">✓</span>' : ''}
+                  </div>
+                `).join('')).join('')}
+              </div>
+            </div>
+            ${stats.checkedDays >= 21 ? `
+              <div class="celebration" onclick="this.remove()">
+                <div class="celebration-content">
+                  <h2>🎉</h2>
+                  <p>恭喜完成21天挑战！</p>
+                  <p class="celebration-sub">你已成功养成这个习惯</p>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+        this.getApp().innerHTML = html;
+      },
+      renderDetailMonth(id, year, month) {
+        if (month < 0) { year--; month = 11; }
+        if (month > 11) { year++; month = 0; }
+        const habit = HabitManager.getHabit(id);
+        if (!habit) return;
+        const calendar = CheckinLogic.getMonthCalendar(id, year, month);
+        const grid = document.getElementById('calendarGrid');
+        if (grid) {
+          grid.innerHTML = calendar.weeks.map(week => week.map(day => day === null ? `<div class="calendar-day empty"></div>` : `
+            <div class="calendar-day ${day.isChecked ? 'checked' : ''} ${day.isToday ? 'today' : ''} ${day.isFuture ? 'future' : ''}"
+                 ${!day.isFuture && day.isChecked ? `onclick="UI.handleUncheckin('${id}', '${day.date}')"` : ''}>
+              <span class="day-number">${day.day}</span>
+              ${day.isChecked ? '<span class="check-mark">✓</span>' : ''}
+            </div>
+          `).join('')).join('');
+        }
+        const header = document.querySelector('.calendar-header h3');
+        if (header) header.textContent = `${MONTHS[month]} ${year}`;
+      },
+      handleUncheckin(id, date) {
+        showConfirm('确定要取消这天的打卡吗？').then(confirmed => {
+          if (confirmed) {
+            CheckinLogic.uncheckin(id, date);
+            this.renderDetail(id);
+          }
+        });
+      },
+      handleDelete(id) {
+        showConfirm('确定要删除这个习惯吗？删除后所有打卡记录将无法恢复。').then(confirmed => {
+          if (confirmed) {
+            HabitManager.removeHabit(id);
+            showToast('习惯已删除');
+            this.renderHome();
+          }
+        });
+      },
+      renderAddEdit(id = null) {
+        const habit = id ? HabitManager.getHabit(id) : null;
+        const isEdit = habit !== null;
+        const html = `
+          <div class="page form-page">
+            <header class="header">
+              <button class="btn-back" onclick="${id ? `UI.renderDetail('${id}')` : 'UI.renderHome()'}">←</button>
+              <h1 class="header-title">${isEdit ? '编辑习惯' : '添加习惯'}</h1>
+              <div class="header-spacer"></div>
+            </header>
+            <form class="form" onsubmit="event.preventDefault(); UI.handleFormSubmit('${id || ''}')">
+              <div class="form-group">
+                <label class="form-label">习惯名称</label>
+                <input type="text" class="form-input" id="habitName" value="${isEdit ? habit.name : ''}" placeholder="例如：每日健身" maxlength="20" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">选择图标</label>
+                <div class="icon-grid" id="iconGrid">
+                  ${ICONS.map(icon => `<button type="button" class="icon-option ${isEdit && habit.icon === icon ? 'selected' : ''}" onclick="UI.selectIcon('${icon}')">${icon}</button>`).join('')}
+                </div>
+                <input type="hidden" id="selectedIcon" value="${isEdit ? habit.icon : ICONS[0]}">
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">${isEdit ? '保存修改' : '创建习惯'}</button>
+            </form>
+          </div>
+        `;
+        this.getApp().innerHTML = html;
+      },
+      selectIcon(icon) {
+        document.querySelectorAll('.icon-option').forEach(b => b.classList.remove('selected'));
+        document.querySelector(`[onclick="UI.selectIcon('${icon}')"]`).classList.add('selected');
+        document.getElementById('selectedIcon').value = icon;
+      },
+      handleFormSubmit(id) {
+        const name = document.getElementById('habitName').value.trim();
+        const icon = document.getElementById('selectedIcon').value;
+        if (!name) { showToast('请输入习惯名称'); return; }
+        if (id) {
+          HabitManager.updateHabit(id, { name, icon });
+          showToast('修改成功');
+          this.renderDetail(id);
+        } else {
+          HabitManager.addHabit(name, icon);
+          showToast('习惯创建成功');
+          this.renderHome();
+        }
+      },
+      renderSettings() {
+        const html = `
+          <div class="page settings-page">
+            <header class="header">
+              <button class="btn-back" onclick="UI.renderHome()">←</button>
+              <h1 class="header-title">设置</h1>
+              <div class="header-spacer"></div>
+            </header>
+            <div class="settings-list">
+              <div class="settings-group">
+                <h3 class="settings-group-title">数据管理</h3>
+                <div class="settings-item">
+                  <div class="settings-item-info">
+                    <span class="settings-icon">📤</span>
+                    <div>
+                      <p class="settings-item-title">导出数据</p>
+                      <p class="settings-item-desc">将所有习惯数据导出为JSON文件</p>
+                    </div>
+                  </div>
+                  <button class="btn btn-outline" onclick="UI.handleExport()">导出</button>
+                </div>
+                <div class="settings-item">
+                  <div class="settings-item-info">
+                    <span class="settings-icon">📥</span>
+                    <div>
+                      <p class="settings-item-title">导入数据</p>
+                      <p class="settings-item-desc">从JSON文件恢复数据</p>
+                    </div>
+                  </div>
+                  <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">导入</button>
+                  <input type="file" id="importFile" accept=".json" style="display:none" onchange="UI.handleImport(event)">
+                </div>
+              </div>
+              <div class="settings-group">
+                <h3 class="settings-group-title">关于</h3>
+                <div class="settings-item about">
+                  <p class="app-name">21+ 打卡APP</p>
+                  <p class="app-version">版本 1.0.0</p>
+                  <p class="app-desc">帮助您坚持21天养成好习惯</p>
+                </div>
+              </div>
+            </div>
+            <nav class="bottom-nav">
+              <button class="nav-btn" onclick="UI.renderHome()">
+                <span class="nav-icon">🏠</span> <span>首页</span>
+              </button>
+              <button class="nav-btn active">
+                <span class="nav-icon">⚙️</span> <span>设置</span>
+              </button>
+            </nav>
+          </div>
+        `;
+        this.getApp().innerHTML = html;
+      },
+      handleExport() {
+        const data = StorageService.exportData();
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `21plus-backup-${formatDate(new Date())}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('数据已导出');
+      },
+      handleImport(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const result = StorageService.importData(e.target.result);
+          if (result.success) {
+            showToast(`成功导入 ${result.count} 个习惯`);
+            this.renderHome();
+          } else {
+            showToast('导入失败: ' + result.error);
+          }
+        };
+        reader.readAsText(file);
+      }
+    };
+
+    class Router {
+      constructor() {
+        this.routes = new Map();
+        window.addEventListener('hashchange', () => this.handleRoute());
+        window.addEventListener('load', () => this.handleRoute());
+      }
+      register(path, handler) { this.routes.set(path, handler); }
+      navigate(path) { window.location.hash = path; }
+      handleRoute() {
+        const hash = window.location.hash.slice(1) || '/';
+        if (this.routes.has(hash)) { this.routes.get(hash)(); return; }
+        if (hash.startsWith('/detail/')) { UI.renderDetail(hash.split('/')[2]); return; }
+        if (hash.startsWith('/edit/')) { UI.renderAddEdit(hash.split('/')[2]); return; }
+        this.navigate('/');
+      }
+    }
+
+    const router = new Router();
+    router.register('/', () => UI.renderHome());
+    router.register('/add', () => UI.renderAddEdit());
+    router.register('/settings', () => UI.renderSettings());
+    console.log('21+ 打卡APP 已启动');
+  </script>
+</body>
+</html>
