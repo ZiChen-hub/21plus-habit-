@@ -8,6 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="description" content="21+ 打卡APP - 坚持21天，养成好习惯">
   <title>21+ 打卡</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💪</text></svg>">
   <style>
     :root {
       --primary: #1a1a2e;
@@ -20,38 +21,65 @@
       --border: #374151;
       --shadow: rgba(0, 0, 0, 0.3);
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; overflow: hidden; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html { height: 100%; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif;
       background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
       color: var(--text-primary);
       min-height: 100vh;
-      -webkit-tap-highlight-color: transparent;
+      height: 100vh;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
     }
-    #app { max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; }
-    .page { padding: 20px; padding-bottom: 100px; min-height: 100vh; }
-    .header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+    #app {
+      max-width: 480px;
+      margin: 0 auto;
+      height: 100vh;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .page {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      padding: 20px;
+      padding-bottom: 120px;
+      min-height: 0;
+    }
+    .page::-webkit-scrollbar { width: 0; background: transparent; }
+    .header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
     .header-content { flex: 1; display: flex; align-items: center; gap: 12px; }
     .header-icon { font-size: 28px; }
     .header-title { font-size: 20px; font-weight: 600; }
     .header-actions { display: flex; gap: 8px; }
     .header-spacer { width: 40px; }
     .title {
-      font-size: 32px; font-weight: 700;
+      font-size: 28px;
+      font-weight: 700;
       background: linear-gradient(135deg, var(--accent), #ff8c5a);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-    .subtitle { color: var(--text-secondary); font-size: 14px; margin-top: 4px; }
+    .subtitle { color: var(--text-secondary); font-size: 13px; margin-top: 4px; }
     .btn {
       display: inline-flex; align-items: center; justify-content: center; gap: 8px;
       padding: 12px 24px; border: none; border-radius: 12px;
-      font-size: 16px; font-weight: 600; cursor: pointer;
-      transition: all 0.2s ease;
+      font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
     }
     .btn:active { transform: scale(0.96); }
-    .btn-primary { background: linear-gradient(135deg, var(--accent), #ff8c5a); color: white; }
-    .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text-primary); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #ff8c5a); color: white;
+    }
+    .btn-primary:hover { box-shadow: 0 4px 20px rgba(255, 107, 53, 0.4); }
+    .btn-outline {
+      background: transparent; border: 2px solid var(--border); color: var(--text-primary);
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
     .btn-block { width: 100%; }
     .btn-add {
       background: linear-gradient(135deg, var(--accent), #ff8c5a); color: white;
@@ -60,141 +88,165 @@
     }
     .btn-checkin {
       background: var(--bg-card); color: var(--text-primary);
-      border: 2px solid var(--border); padding: 10px 20px;
-      border-radius: 12px; font-weight: 600; min-width: 80px;
+      border: 2px solid var(--border); padding: 10px 20px; border-radius: 12px;
+      font-weight: 600; min-width: 80px;
     }
+    .btn-checkin:hover { border-color: var(--accent); }
     .btn-checkin.checked { background: var(--success); border-color: var(--success); color: var(--primary); }
     .btn-back {
       background: var(--bg-card); border: none; color: var(--text-primary);
-      width: 40px; height: 40px; border-radius: 12px; font-size: 20px;
+      width: 40px; height: 40px; border-radius: 12px; font-size: 20px; cursor: pointer;
+      transition: all 0.2s ease;
     }
+    .btn-back:hover { background: var(--border); }
     .btn-icon-only {
       background: var(--bg-card); border: none; color: var(--text-primary);
-      width: 40px; height: 40px; border-radius: 12px; font-size: 16px;
+      width: 40px; height: 40px; border-radius: 12px; font-size: 16px; cursor: pointer;
+      transition: all 0.2s ease;
     }
+    .btn-icon-only:hover { background: var(--border); }
     .btn-calendar-nav {
       background: var(--bg-card); border: none; color: var(--text-primary);
-      width: 36px; height: 36px; border-radius: 10px; font-size: 16px;
+      width: 36px; height: 36px; border-radius: 10px; font-size: 16px; cursor: pointer;
+      transition: all 0.2s ease;
     }
     .btn-calendar-nav:disabled { opacity: 0.3; cursor: not-allowed; }
     .bottom-actions {
-      position: fixed; bottom: 80px; left: 0; right: 0;
-      display: flex; justify-content: center; padding: 0 20px; z-index: 10;
+      position: absolute; bottom: 72px; left: 0; right: 0;
+      display: flex; justify-content: center; padding: 0 20px; z-index: 10; pointer-events: none;
     }
+    .bottom-actions .btn { pointer-events: auto; }
     .bottom-nav {
-      position: fixed; bottom: 0; left: 0; right: 0;
+      position: absolute; bottom: 0; left: 0; right: 0;
       display: flex; justify-content: space-around;
       background: var(--secondary); border-top: 1px solid var(--border);
-      padding: 8px 0; padding-bottom: max(8px, env(safe-area-inset-bottom));
-      z-index: 100;
+      padding: 6px 0; padding-bottom: max(6px, env(safe-area-inset-bottom)); z-index: 100;
     }
     .nav-btn {
-      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
       background: none; border: none; color: var(--text-secondary);
-      padding: 8px 24px; border-radius: 12px;
+      padding: 6px 24px; border-radius: 10px; cursor: pointer; transition: all 0.2s ease;
     }
     .nav-btn.active { color: var(--accent); }
-    .nav-icon { font-size: 20px; }
-    .habit-list { display: flex; flex-direction: column; gap: 16px; }
-    .empty-state { text-align: center; padding: 60px 20px; }
-    .empty-icon { font-size: 64px; margin-bottom: 16px; }
-    .empty-state h3 { font-size: 20px; margin-bottom: 8px; }
-    .empty-state p { color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
+    .nav-btn:hover { background: rgba(255, 255, 255, 0.05); }
+    .nav-icon { font-size: 18px; }
+    .habit-list { display: flex; flex-direction: column; gap: 12px; }
+    .empty-state { text-align: center; padding: 48px 20px; }
+    .empty-icon { font-size: 60px; margin-bottom: 16px; }
+    .empty-state h3 { font-size: 18px; margin-bottom: 8px; }
+    .empty-state p { color: var(--text-secondary); font-size: 13px; line-height: 1.6; }
     .habit-card {
-      display: flex; align-items: center; gap: 16px;
-      background: var(--bg-card); padding: 16px; border-radius: 16px;
-      box-shadow: 0 4px 16px var(--shadow);
+      display: flex; align-items: center; gap: 12px;
+      background: var(--bg-card); padding: 12px 16px; border-radius: 14px;
+      box-shadow: 0 2px 12px var(--shadow);
     }
-    .habit-info { flex: 1; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+    .habit-info {
+      flex: 1; display: flex; align-items: center; gap: 12px; cursor: pointer; min-width: 0;
+    }
     .habit-icon {
-      font-size: 32px; width: 48px; height: 48px;
-      display: flex; align-items: center; justify-content: center;
-      background: rgba(255, 255, 255, 0.05); border-radius: 12px;
+      font-size: 28px; width: 44px; height: 44px; display: flex; align-items: center;
+      justify-content: center; background: rgba(255, 255, 255, 0.05); border-radius: 10px; flex-shrink: 0;
     }
-    .habit-details { flex: 1; }
-    .habit-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
-    .habit-streak { font-size: 13px; color: var(--accent); font-weight: 500; }
-    .habit-progress-ring { width: 48px; height: 48px; position: relative; }
+    .habit-details { flex: 1; min-width: 0; overflow: hidden; }
+    .habit-name {
+      font-size: 15px; font-weight: 600; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .habit-streak { font-size: 12px; color: var(--accent); font-weight: 500; }
+    .habit-progress-ring { width: 44px; height: 44px; position: relative; flex-shrink: 0; }
     .habit-progress-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-    .ring-bg { fill: none; stroke: rgba(255, 255, 255, 0.1); stroke-width: 3; }
+    .ring-bg { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 3; }
     .ring-fill { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; transition: stroke-dasharray 0.5s ease; }
     .ring-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 10px; font-weight: 600; color: var(--text-secondary); }
-    .stats-card { display: flex; justify-content: space-around; background: var(--bg-card); padding: 20px; border-radius: 16px; margin-bottom: 20px; }
+    .stats-card { display: flex; justify-content: space-around; background: var(--bg-card); padding: 16px; border-radius: 14px; margin-bottom: 16px; }
     .stat-item { text-align: center; }
-    .stat-value { display: block; font-size: 28px; font-weight: 700; color: var(--accent); }
-    .stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
-    .progress-section { margin-bottom: 24px; }
-    .progress-bar { height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+    .stat-value { display: block; font-size: 24px; font-weight: 700; color: var(--accent); }
+    .stat-label { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+    .progress-section { margin-bottom: 20px; }
+    .progress-bar { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
     .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #ff8c5a); border-radius: 4px; transition: width 0.5s ease; }
-    .progress-text { text-align: center; font-size: 14px; color: var(--text-secondary); }
-    .calendar-container { background: var(--bg-card); border-radius: 16px; padding: 16px; }
-    .calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-    .calendar-header h3 { font-size: 16px; font-weight: 600; }
-    .calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 8px; }
-    .weekday { text-align: center; font-size: 12px; color: var(--text-secondary); padding: 8px 0; }
+    .progress-text { text-align: center; font-size: 13px; color: var(--text-secondary); }
+    .calendar-container { background: var(--bg-card); border-radius: 14px; padding: 14px; }
+    .calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .calendar-header h3 { font-size: 15px; font-weight: 600; }
+    .calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 6px; }
+    .weekday { text-align: center; font-size: 11px; color: var(--text-secondary); padding: 6px 0; }
     .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
     .calendar-day {
       aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      border-radius: 10px; font-size: 14px; position: relative;
-      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px; font-size: 13px; position: relative;
+      background: rgba(255,255,255,0.05); transition: all 0.2s ease;
     }
     .calendar-day.empty { background: transparent; }
-    .calendar-day.checked { background: var(--success); color: var(--primary); }
+    .calendar-day.checked { background: var(--success); color: var(--primary); cursor: pointer; }
     .calendar-day.today { border: 2px solid var(--accent); }
     .calendar-day.future { opacity: 0.3; }
-    .check-mark { font-size: 10px; position: absolute; bottom: 2px; }
-    .form { display: flex; flex-direction: column; gap: 24px; }
+    .calendar-day:not(.empty):not(.future):not(.checked) { cursor: pointer; }
+    .calendar-day:not(.empty):not(.future):not(.checked):hover { background: rgba(255,255,255,0.1); }
+    .check-mark { font-size: 9px; position: absolute; bottom: 2px; }
+    .form { display: flex; flex-direction: column; gap: 20px; }
     .form-group { display: flex; flex-direction: column; gap: 8px; }
-    .form-label { font-size: 14px; font-weight: 600; color: var(--text-secondary); }
+    .form-label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
     .form-input {
       background: var(--bg-card); border: 2px solid var(--border); border-radius: 12px;
-      padding: 14px 16px; font-size: 16px; color: var(--text-primary);
+      padding: 12px 14px; font-size: 15px; color: var(--text-primary); transition: border-color 0.2s ease;
     }
     .form-input:focus { outline: none; border-color: var(--accent); }
+    .form-input::placeholder { color: var(--text-secondary); }
     .icon-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
     .icon-option {
       aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-      font-size: 28px; background: var(--bg-card); border: 2px solid var(--border);
-      border-radius: 12px; cursor: pointer;
+      font-size: 26px; background: var(--bg-card); border: 2px solid var(--border);
+      border-radius: 12px; cursor: pointer; transition: all 0.2s ease;
     }
-    .icon-option.selected { border-color: var(--accent); background: rgba(255, 107, 53, 0.2); }
-    .settings-list { display: flex; flex-direction: column; gap: 24px; }
-    .settings-group-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
-    .settings-item { display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); padding: 16px; border-radius: 12px; margin-bottom: 12px; }
-    .settings-item-info { display: flex; align-items: center; gap: 12px; }
-    .settings-icon { font-size: 24px; }
-    .settings-item-title { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
-    .settings-item-desc { font-size: 12px; color: var(--text-secondary); }
+    .icon-option:hover { border-color: var(--accent); }
+    .icon-option.selected { border-color: var(--accent); background: rgba(255,107,53,0.2); }
+    .settings-list { display: flex; flex-direction: column; gap: 20px; }
+    .settings-group-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+    .settings-item {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--bg-card); padding: 14px 16px; border-radius: 12px; margin-bottom: 10px;
+    }
+    .settings-item-info { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+    .settings-icon { font-size: 22px; flex-shrink: 0; }
+    .settings-item-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .settings-item-desc { font-size: 11px; color: var(--text-secondary); }
     .settings-item.about { flex-direction: column; align-items: flex-start; gap: 8px; }
-    .app-name { font-size: 16px; font-weight: 600; }
-    .app-version { font-size: 12px; color: var(--text-secondary); }
-    .app-desc { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+    .app-name { font-size: 15px; font-weight: 600; }
+    .app-version { font-size: 11px; color: var(--text-secondary); }
+    .app-desc { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
     .modal-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center;
-      z-index: 1000; padding: 20px;
+      background: rgba(0,0,0,0.7);
+      display: flex; align-items: center; justify-content: center; z-index: 1000;
+      padding: 20px; animation: fadeIn 0.2s ease;
     }
-    .modal-content { background: var(--bg-card); border-radius: 16px; padding: 24px; max-width: 320px; width: 100%; }
+    .modal-content {
+      background: var(--bg-card); border-radius: 16px; padding: 24px; max-width: 320px; width: 100%;
+      animation: scaleIn 0.2s ease;
+    }
     .modal-message { font-size: 16px; text-align: center; margin-bottom: 20px; line-height: 1.5; }
     .modal-buttons { display: flex; gap: 12px; }
     .modal-buttons .btn { flex: 1; }
     .btn-cancel { background: var(--border); color: var(--text-primary); }
     .btn-confirm { background: var(--accent); color: white; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     .toast {
       position: fixed; bottom: 100px; left: 50%;
       transform: translateX(-50%) translateY(100px);
       background: var(--bg-card); color: var(--text-primary);
-      padding: 12px 24px; border-radius: 12px; font-size: 14px;
-      box-shadow: 0 4px 20px var(--shadow); z-index: 1001;
-      opacity: 0; transition: all 0.3s ease;
+      padding: 12px 24px; border-radius: 12px;
+      font-size: 14px; box-shadow: 0 4px 20px var(--shadow);
+      z-index: 1001; opacity: 0; transition: all 0.3s ease;
     }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     .celebration {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(26, 26, 46, 0.95); display: flex;
-      align-items: center; justify-content: center; z-index: 1000;
+      background: rgba(26,26,46,0.95);
+      display: flex; align-items: center; justify-content: center; z-index: 1000;
+      animation: fadeIn 0.3s ease;
     }
-    .celebration-content { text-align: center; }
+    .celebration-content { text-align: center; animation: scaleIn 0.5s ease; }
     .celebration h2 { font-size: 80px; margin-bottom: 16px; animation: bounce 1s ease infinite; }
     .celebration p { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
     .celebration-sub { font-size: 16px; color: var(--text-secondary); }
@@ -204,531 +256,503 @@
       .habit-progress-ring { order: -1; width: 40px; height: 40px; }
       .btn-checkin { width: 100%; margin-top: 8px; }
     }
+    @media (min-width: 768px) {
+      #app { max-width: 480px; border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
+      .page { padding: 24px; padding-bottom: 120px; }
+    }
   </style>
 </head>
 <body>
   <div id="app"></div>
   <script>
-    const STORAGE_KEY = 'habits';
-    const ICONS = ['💪', '📚', '🏃', '💧', '🧘', '💤', '🥗', '✍️', '🎯', '🌅', '😴', '🚭', '💰', '🎨', '🎵'];
-    const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
-    const MONTHS = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
-
-    function generateId() { return 'h_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9); }
-    function getToday() { return formatDate(new Date()); }
-    function formatDate(date) {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    }
-    function showToast(message, duration = 2000) {
-      const existing = document.querySelector('.toast');
-      if (existing) existing.remove();
-      const toast = document.createElement('div');
-      toast.className = 'toast';
-      toast.textContent = message;
-      document.body.appendChild(toast);
-      requestAnimationFrame(() => toast.classList.add('show'));
-      setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-      }, duration);
-    }
-    function showConfirm(message) {
-      return new Promise((resolve) => {
-        const overlay = document.createElement('div');
-        overlay.className = 'modal-overlay';
-        overlay.innerHTML = `
+    const Utils = {
+      generateId() { return 'h_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9); },
+      getToday() { return this.formatDate(new Date()); },
+      formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      },
+      parseDate(dateStr) {
+        const [year, month, day] = dateStr.split('-').map(Number);
+        return new Date(year, month - 1, day);
+      },
+      addDays(date, days) { const result = new Date(date); result.setDate(result.getDate() + days); return result; },
+      daysBetween(date1, date2) {
+        const d1 = typeof date1 === 'string' ? this.parseDate(date1) : date1;
+        const d2 = typeof date2 === 'string' ? this.parseDate(date2) : date2;
+        return Math.floor(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24);
+      },
+      showToast(message, duration) {
+        const existing = document.querySelector('.toast');
+        if (existing) existing.remove();
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('show'));
+        setTimeout(() => {
+          toast.classList.remove('show');
+          setTimeout(() => toast.remove(), 300);
+        }, duration || 2000);
+      },
+      showConfirm(message) {
+        return new Promise((resolve) => {
+          const overlay = document.createElement('div');
+          overlay.className = 'modal-overlay';
+          overlay.innerHTML = `
           <div class="modal-content">
             <p class="modal-message">${message}</p>
             <div class="modal-buttons">
               <button class="btn btn-cancel" data-action="cancel">取消</button>
               <button class="btn btn-confirm" data-action="confirm">确认</button>
             </div>
-          </div>
-        `;
-        document.body.appendChild(overlay);
-        const handleClick = (e) => {
-          const action = e.target.dataset.action;
-          if (action) {
-            overlay.remove();
-            document.removeEventListener('click', handleClick);
-            resolve(action === 'confirm');
-          }
-        };
-        document.addEventListener('click', handleClick);
-      });
-    }
-
-    const StorageService = {
-      saveHabits(habits) {
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(habits)); return true; }
-        catch (e) { return false; }
-      },
-      loadHabits() {
-        try { const data = localStorage.getItem(STORAGE_KEY); return data ? JSON.parse(data) : []; }
-        catch (e) { return []; }
-      },
+          </div>`;
+          document.body.appendChild(overlay);
+          const handleClick = (e) => {
+            const action = e.target.dataset.action;
+            if (action) { overlay.remove(); document.removeEventListener('click', handleClick); resolve(action === 'confirm'); }
+          };
+          document.addEventListener('click', handleClick);
+        });
+      }
+    };
+    const Storage = {
+      KEY: 'habits',
+      save(habits) { try { localStorage.setItem(this.KEY, JSON.stringify(habits)); return true; } catch (e) { console.error('保存失败', e); return false; } },
+      load() { try { const data = localStorage.getItem(this.KEY); return data ? JSON.parse(data) : []; } catch (e) { console.error('加载失败', e); return []; } },
       exportData() {
-        const habits = this.loadHabits();
-        return JSON.stringify({ version: '1.0', exportDate: new Date().toISOString(), habits }, null, 2);
+        const habits = this.load();
+        return JSON.stringify({ version: '1.0', exportDate: new Date().toISOString(), habits: habits }, null, 2);
       },
       importData(jsonStr) {
         try {
           const data = JSON.parse(jsonStr);
           if (!data.habits || !Array.isArray(data.habits)) throw new Error('数据格式无效');
-          data.habits.forEach(h => { if (!h.id || !h.name || !h.createdAt) throw new Error('数据不完整'); });
-          this.saveHabits(data.habits);
+          data.habits.forEach(habit => { if (!habit.id || !habit.name || !habit.createdAt) throw new Error('习惯数据不完整'); });
+          this.save(data.habits);
           return { success: true, count: data.habits.length };
         } catch (e) { return { success: false, error: e.message }; }
-      }
     };
-
-    const HabitManager = {
-      getAll() { return StorageService.loadHabits(); },
-      getHabit(id) { return this.getAll().find(h => h.id === id); },
-      addHabit(name, icon = '📌') {
+    const Habits = {
+      getAll() { return Storage.load(); },
+      get(id) { return this.getAll().find(h => h.id === id); },
+      add(name, icon) {
         const habits = this.getAll();
-        const newHabit = { id: generateId(), name: name.trim(), icon, createdAt: getToday(), checkinDates: [] };
-        habits.push(newHabit);
-        StorageService.saveHabits(habits);
-        return newHabit;
+        const newHabit = { id: Utils.generateId(), name: name.trim(), icon: icon || '📌', createdAt: Utils.getToday(), checkinDates: [] };
+        habits.push(newHabit); Storage.save(habits); return newHabit;
       },
-      updateHabit(id, data) {
+      update(id, data) {
         const habits = this.getAll();
         const index = habits.findIndex(h => h.id === id);
         if (index === -1) return null;
         if (data.name !== undefined) habits[index].name = data.name.trim();
         if (data.icon !== undefined) habits[index].icon = data.icon;
-        StorageService.saveHabits(habits);
-        return habits[index];
+        Storage.save(habits); return habits[index];
       },
-      removeHabit(id) {
-        const habits = this.getAll();
-        const index = habits.findIndex(h => h.id === id);
-        if (index === -1) return false;
-        habits.splice(index, 1);
-        StorageService.saveHabits(habits);
-        return true;
-      },
-      hasCheckedIn(habit, date) { return habit.checkinDates.includes(date); },
-      checkin(habitId, date) {
-        const habits = this.getAll();
-        const habit = habits.find(h => h.id === habitId);
+      remove(id) { const habits = this.getAll(); const index = habits.findIndex(h => h.id === id); if (index === -1) return false; habits.splice(index, 1); Storage.save(habits); return true; },
+      hasChecked(habit, date) { return habit.checkinDates.includes(date); },
+      doCheck(id, date) {
+        const habits = this.getAll(); const habit = habits.find(h => h.id === id);
         if (!habit) return false;
-        if (!habit.checkinDates.includes(date)) {
-          habit.checkinDates.push(date);
-          habit.checkinDates.sort();
-          StorageService.saveHabits(habits);
-        }
+        if (!habit.checkinDates.includes(date)) { habit.checkinDates.push(date); habit.checkinDates.sort(); Storage.save(habits); }
         return true;
       },
-      uncheckin(habitId, date) {
-        const habits = this.getAll();
-        const habit = habits.find(h => h.id === habitId);
+      undoCheck(id, date) {
+        const habits = this.getAll(); const habit = habits.find(h => h.id === id);
         if (!habit) return false;
         const index = habit.checkinDates.indexOf(date);
-        if (index > -1) {
-          habit.checkinDates.splice(index, 1);
-          StorageService.saveHabits(habits);
-        }
+        if (index > -1) { habit.checkinDates.splice(index, 1); Storage.save(habits); }
         return true;
       },
       getStreak(habit) {
         if (!habit.checkinDates || habit.checkinDates.length === 0) return 0;
-        const sortedDates = [...habit.checkinDates].sort().reverse();
+        const today = Utils.getToday();
+        const sorted = [...habit.checkinDates].sort().reverse();
         let streak = 0;
-        let currentDate = sortedDates[0] === getToday() ? new Date() : new Date(Date.now() - 86400000);
-        for (const dateStr of sortedDates) {
-          const expected = formatDate(currentDate);
-          if (dateStr === expected) { streak++; currentDate = new Date(currentDate - 86400000); }
-          else if (dateStr < expected) break;
+        let currentDate = sorted[0] === today ? new Date() : Utils.addDays(new Date(), -1);
+        for (const dateStr of sorted) {
+          const expected = Utils.formatDate(currentDate);
+          if (dateStr === expected) { streak++; currentDate = Utils.addDays(currentDate, -1); }
+          else if (dateStr < expected) { break; }
         }
         return streak;
       },
       getProgress(habit) {
-        const today = getToday();
-        const start = new Date(habit.createdAt);
-        const end = new Date(today);
+        const today = Utils.getToday();
+        const startDate = habit.createdAt;
+        const start = Utils.parseDate(startDate);
+        const end = Utils.parseDate(today);
         const totalDays = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
-        const checkedDays = habit.checkinDates.filter(d => d >= habit.createdAt && d <= today).length;
+        const checkedDays = habit.checkinDates.filter(d => d >= startDate && d <= today).length;
         const progress = Math.min((checkedDays / 21) * 100, 100);
-        return { totalDays, checkedDays, progress, remaining: Math.max(0, 21 - checkedDays) };
+        return { totalDays, checkedDays, progress, remaining: Math.max(0, 21 - checkedDays };
       }
     };
-
-    const CheckinLogic = {
-      checkin(habitId) {
-        const today = getToday();
-        const habit = HabitManager.getHabit(habitId);
+    const Checkin = {
+      doCheck(id) {
+        const today = Utils.getToday();
+        const habit = Habits.get(id);
         if (!habit) return { success: false, error: '习惯不存在' };
-        if (HabitManager.hasCheckedIn(habit, today)) return { success: false, error: '今日已打卡' };
-        HabitManager.checkin(habitId, today);
-        const updated = HabitManager.getHabit(habitId);
-        return {
-          success: true,
-          streak: HabitManager.getStreak(updated),
-          progress: HabitManager.getProgress(updated),
-          isCompleted: HabitManager.getProgress(updated).checkedDays >= 21
-        };
+        if (Habits.hasChecked(habit, today)) return { success: false, error: '今日已打卡' };
+        Habits.doCheck(id, today);
+        const updated = Habits.get(id);
+        const streak = Habits.getStreak(updated);
+        const progress = Habits.getProgress(updated);
+        return { success: true, streak, progress, isCompleted: progress.checkedDays >= 21 };
       },
-      uncheckin(habitId, date = getToday()) {
-        const habit = HabitManager.getHabit(habitId);
+      undoCheck(id, date) {
+        const habit = Habits.get(id);
         if (!habit) return { success: false, error: '习惯不存在' };
-        if (!HabitManager.hasCheckedIn(habit, date)) return { success: false, error: '该日期未打卡' };
-        HabitManager.uncheckin(habitId, date);
-        const updated = HabitManager.getHabit(habitId);
-        return { success: true, streak: HabitManager.getStreak(updated), progress: HabitManager.getProgress(updated) };
+        if (!Habits.hasChecked(habit, date)) return { success: false, error: '该日期未打卡' };
+        Habits.undoCheck(id, date); return { success: true };
       },
-      getMonthCalendar(habitId, year, month) {
-        const habit = HabitManager.getHabit(habitId);
-        if (!habit) return null;
+      getMonthCalendar(id, year, month) {
+        const habit = Habits.get(id); if (!habit) return null;
         const firstDay = new Date(year, month, 1);
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const lastDay = new Date(year, month + 1, 0);
+        const daysInMonth = lastDay.getDate();
         const startWeekday = firstDay.getDay();
-        const calendar = [];
-        let week = [];
+        const calendar = []; let week = [];
         for (let i = 0; i < startWeekday; i++) week.push(null);
         for (let day = 1; day <= daysInMonth; day++) {
-          const dateStr = formatDate(new Date(year, month, day));
-          week.push({ day, date: dateStr, isChecked: habit.checkinDates.includes(dateStr), isToday: dateStr === getToday(), isFuture: dateStr > getToday() });
+          const dateStr = Utils.formatDate(new Date(year, month, day));
+          const isChecked = habit.checkinDates.includes(dateStr);
+          const isToday = dateStr === Utils.getToday();
+          const isFuture = dateStr > Utils.getToday();
+          week.push({ day, date: dateStr, isChecked, isToday, isFuture });
           if (week.length === 7) { calendar.push(week); week = []; }
         }
         if (week.length > 0) { while (week.length < 7) week.push(null); calendar.push(week); }
         return { year, month, weeks: calendar, checkedCount: habit.checkinDates.filter(d => { const [y, m] = d.split('-').map(Number); return y === year && m === month + 1; }).length };
       },
-      getStats(habitId) {
-        const habit = HabitManager.getHabit(habitId);
+      getStats(id) {
+        const habit = Habits.get(id);
         if (!habit) return null;
-        const today = getToday();
-        const totalDays = Math.floor((new Date(today) - new Date(habit.createdAt)) / (1000 * 60 * 60 * 24)) + 1;
+        const today = Utils.getToday();
+        const totalDays = Utils.daysBetween(habit.createdAt, today) + 1;
         const checkedDays = habit.checkinDates.filter(d => d <= today).length;
-        const streak = HabitManager.getStreak(habit);
-        const progress = HabitManager.getProgress(habit);
+        const streak = Habits.getStreak(habit);
+        const progress = Habits.getProgress(habit);
         return { totalDays, checkedDays, missedDays: Math.max(0, totalDays - checkedDays), streak, ...progress };
       }
     };
-
+    const Router = {
+      routes: new Map(), params: {},
+      register(path, handler) { this.routes.set(path, handler); },
+      navigate(path) { window.location.hash = path; },
+      handle() {
+        const hash = window.location.hash.slice(1) || '/';
+        const [path] = hash.split('?');
+        this.params = {};
+        if (this.routes.has(path)) { this.routes.get(path)(this.params); return; }
+        for (const [routePath, handler) of this.routes) {
+          const matched = this.matchPath(routePath, path);
+          if (matched) { this.params = matched; handler(this.params); return; }
+        }
+        this.navigate('/');
+      },
+      matchPath(route, path) {
+        const routeParts = route.split('/').filter(Boolean);
+        const pathParts = path.split('/').filter(Boolean);
+        if (routeParts.length !== pathParts.length) return null;
+        const params = {};
+        for (let i = 0; i < routeParts.length; i++) {
+          if (routeParts[i].startsWith(':')) params[routeParts[i].slice(1)] = pathParts[i];
+          else if (routeParts[i] !== pathParts[i]) return null;
+        }
+        return params;
+      },
+      init() { window.addEventListener('hashchange', () => this.handle()); window.addEventListener('load', () => this.handle()); }
+    };
+    const ICONS = ['💪', '📚', '🏃', '💧', '🧘', '💤', '🥗', '✍️', '🎯', '🌅', '😴', '🚭', '💰', '🎨', '🎵'];
+    const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
+    const MONTHS = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
     const UI = {
+      currentCalendarState: null,
       getApp() { return document.getElementById('app'); },
       renderHome() {
-        const habits = HabitManager.getAll();
-        const today = getToday();
+        const habits = Habits.getAll();
+        const today = Utils.getToday();
         const html = `
-          <div class="page home-page">
-            <header class="header">
-              <h1 class="title">21+</h1>
-              <p class="subtitle">坚持21天，养成好习惯</p>
-            </header>
-            <div class="habit-list">
-              ${habits.length === 0 ? `
-                <div class="empty-state">
-                  <div class="empty-icon">🌱</div>
-                  <h3>还没有习惯</h3>
-                  <p>点击下方按钮添加第一个习惯<br>开启21天挑战之旅</p>
-                </div>
-              ` : habits.map(h => {
-                const isChecked = HabitManager.hasCheckedIn(h, today);
-                const streak = HabitManager.getStreak(h);
-                const progress = HabitManager.getProgress(h);
-                return `
-                  <div class="habit-card" data-id="${h.id}">
-                    <div class="habit-info" onclick="UI.renderDetail('${h.id}')">
-                      <div class="habit-icon">${h.icon}</div>
-                      <div class="habit-details">
-                        <h3 class="habit-name">${h.name}</h3>
-                        <p class="habit-streak">连续 ${streak} 天</p>
-                      </div>
-                    </div>
-                    <div class="habit-progress-ring" data-progress="${progress.progress}">
-                      <svg viewBox="0 0 36 36">
-                        <path class="ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-                        <path class="ring-fill" stroke-dasharray="${progress.progress}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-                      </svg>
-                      <span class="ring-text">${Math.round(progress.progress)}%</span>
-                    </div>
-                    <button class="btn-checkin ${isChecked ? 'checked' : ''}" onclick="UI.handleCheckin('${h.id}')">
-                      ${isChecked ? '✓' : '打卡'}
-                    </button>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-            <div class="bottom-actions">
-              <button class="btn btn-add" onclick="UI.renderAddEdit()">
-                <span class="btn-icon">+</span> 添加习惯
-              </button>
-            </div>
-            <nav class="bottom-nav">
-              <button class="nav-btn active" onclick="UI.renderHome()">
-                <span class="nav-icon">🏠</span> <span>首页</span>
-              </button>
-              <button class="nav-btn" onclick="UI.renderSettings()">
-                <span class="nav-icon">⚙️</span> <span>设置</span>
-              </button>
-            </nav>
+        <div class="page home-page">
+          <header class="header"><h1 class="title">21+</h1><p class="subtitle">坚持21天，养成好习惯</p></header>
+          <div class="habit-list">${habits.length === 0 ? this.renderEmpty() : habits.map(h => this.renderCard(h, today)).join('')}</div>
+          <div class="bottom-actions"><button class="btn btn-add" id="addBtn">+ 添加习惯</button></div>
+          <nav class="bottom-nav">
+            <button class="nav-btn active"><span class="nav-icon">🏠</span><span>首页</span></button>
+            <button class="nav-btn" onclick="location.hash='#/settings'"><span class="nav-icon">⚙️</span><span>设置</span></button>
+          </nav>
+        </div>`;
+        this.getApp().innerHTML = html; this.bindHomeEvents();
+      },
+      renderEmpty() { return `<div class="empty-state"><div class="empty-icon">🌱</div><h3>还没有习惯</h3><p>点击下方按钮添加第一个习惯<br>开启21天挑战之旅</p></div>`; },
+      renderCard(habit, today) {
+        const isChecked = Habits.hasChecked(habit, today);
+        const streak = Habits.getStreak(habit);
+        const progress = Habits.getProgress(habit);
+        return `<div class="habit-card" data-id="${habit.id}">
+          <div class="habit-info" onclick="location.hash='#/detail/${habit.id}">
+            <div class="habit-icon">${habit.icon}</div>
+            <div class="habit-details"><h3 class="habit-name">${habit.name}</h3><p class="habit-streak">连续 ${streak} 天</p></div>
           </div>
-        `;
-        this.getApp().innerHTML = html;
+          <div class="habit-progress-ring">
+            <svg viewBox="0 0 36 36">
+              <path class="ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+              <path class="ring-fill" stroke-dasharray="${progress.progress}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            </svg>
+            <span class="ring-text">${Math.round(progress.progress)}%</span>
+          </div>
+          <button class="btn-checkin ${isChecked ? 'checked' : ''}" data-id="${habit.id}">${isChecked ? '✓' : '打卡'}</button>
+        </div>`;
       },
-      handleCheckin(id) {
-        const result = CheckinLogic.checkin(id);
-        if (result.success) {
-          if (result.isCompleted) showToast('🎉 恭喜完成21天挑战！');
-          else showToast(`打卡成功！连续 ${result.streak} 天`);
-          this.renderHome();
-        } else {
-          showToast(result.error);
-        }
+      bindHomeEvents() {
+        const addBtn = document.getElementById('addBtn');
+        if (addBtn) addBtn.addEventListener('click', () => Router.navigate('/add'));
+        document.querySelectorAll('.btn-checkin').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = btn.dataset.id;
+            const result = Checkin.doCheck(id);
+            if (result.success) {
+              if (result.isCompleted) Utils.showToast('🎉 恭喜完成21天挑战！');
+              else Utils.showToast(`打卡成功！连续 ${result.streak} 天`);
+              this.renderHome();
+            } else Utils.showToast(result.error);
+          });
+        });
       },
-      renderDetail(id) {
-        const habit = HabitManager.getHabit(id);
-        if (!habit) { this.renderHome(); return; }
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = now.getMonth();
-        const calendar = CheckinLogic.getMonthCalendar(id, year, month);
-        const stats = CheckinLogic.getStats(id);
+      renderDetail(params) {
+        const id = params.id;
+        const habit = Habits.get(id);
+        if (!habit) { Router.navigate('/'); return; }
+        const now = new Date(); const year = now.getFullYear(); const month = now.getMonth();
+        this.currentCalendarState = { id, year, month };
+        const calendar = Checkin.getMonthCalendar(id, year, month);
+        const stats = Checkin.getStats(id);
         const html = `
-          <div class="page detail-page">
-            <header class="header">
-              <button class="btn-back" onclick="UI.renderHome()">←</button>
-              <div class="header-content">
-                <span class="header-icon">${habit.icon}</span>
-                <h1 class="header-title">${habit.name}</h1>
-              </div>
-              <div class="header-actions">
-                <button class="btn-icon-only" onclick="UI.renderAddEdit('${id}')">✏️</button>
-                <button class="btn-icon-only" onclick="UI.handleDelete('${id}')">🗑️</button>
-              </div>
-            </header>
-            <div class="stats-card">
-              <div class="stat-item"><span class="stat-value">${stats.streak}</span><span class="stat-label">连续天数</span></div>
-              <div class="stat-item"><span class="stat-value">${stats.checkedDays}</span><span class="stat-label">已打卡</span></div>
-              <div class="stat-item"><span class="stat-value">${stats.remaining}</span><span class="stat-label">剩余</span></div>
+        <div class="page detail-page">
+          <header class="header">
+            <button class="btn-back" onclick="location.hash='/'">←</button>
+            <div class="header-content"><span class="header-icon">${habit.icon}</span><h1 class="header-title">${habit.name}</h1></div>
+            <div class="header-actions">
+              <button class="btn-icon-only" onclick="location.hash='#/edit/${id}'">✏️</button>
+              <button class="btn-icon-only" id="delBtn">🗑️</button>
             </div>
-            <div class="progress-section">
-              <div class="progress-bar"><div class="progress-fill" style="width: ${stats.progress}%"></div></div>
-              <p class="progress-text">${stats.checkedDays >= 21 ? '🎉 挑战完成！' : `已完成 ${stats.checkedDays}/21 天`}</p>
-            </div>
-            <div class="calendar-container">
-              <div class="calendar-header">
-                <button class="btn-calendar-nav" onclick="UI.renderDetailMonth('${id}', ${year}, ${month - 1})">←</button>
-                <h3>${MONTHS[month]} ${year}</h3>
-                <button class="btn-calendar-nav" ${month === now.getMonth() && year === now.getFullYear() ? 'disabled' : ''} onclick="UI.renderDetailMonth('${id}', ${year}, ${month + 1})">→</button>
-              </div>
-              <div class="calendar-weekdays">${WEEKDAYS.map(d => `<div class="weekday">${d}</div>`).join('')}</div>
-              <div class="calendar-grid" id="calendarGrid">
-                ${calendar.weeks.map(week => week.map(day => day === null ? `<div class="calendar-day empty"></div>` : `
-                  <div class="calendar-day ${day.isChecked ? 'checked' : ''} ${day.isToday ? 'today' : ''} ${day.isFuture ? 'future' : ''}"
-                       ${!day.isFuture && day.isChecked ? `onclick="UI.handleUncheckin('${id}', '${day.date}')"` : ''}>
-                    <span class="day-number">${day.day}</span>
-                    ${day.isChecked ? '<span class="check-mark">✓</span>' : ''}
-                  </div>
-                `).join('')).join('')}
-              </div>
-            </div>
-            ${stats.checkedDays >= 21 ? `
-              <div class="celebration" onclick="this.remove()">
-                <div class="celebration-content">
-                  <h2>🎉</h2>
-                  <p>恭喜完成21天挑战！</p>
-                  <p class="celebration-sub">你已成功养成这个习惯</p>
-                </div>
-              </div>
-            ` : ''}
+          </header>
+          <div class="stats-card">
+            <div class="stat-item"><span class="stat-value">${stats.streak}</span><span class="stat-label">连续天数</span></div>
+            <div class="stat-item"><span class="stat-value">${stats.checkedDays}</span><span class="stat-label">已打卡</span></div>
+            <div class="stat-item"><span class="stat-value">${stats.remaining}</span><span class="stat-label">剩余</span></div>
           </div>
-        `;
-        this.getApp().innerHTML = html;
-      },
-      renderDetailMonth(id, year, month) {
-        if (month < 0) { year--; month = 11; }
-        if (month > 11) { year++; month = 0; }
-        const habit = HabitManager.getHabit(id);
-        if (!habit) return;
-        const calendar = CheckinLogic.getMonthCalendar(id, year, month);
-        const grid = document.getElementById('calendarGrid');
-        if (grid) {
-          grid.innerHTML = calendar.weeks.map(week => week.map(day => day === null ? `<div class="calendar-day empty"></div>` : `
-            <div class="calendar-day ${day.isChecked ? 'checked' : ''} ${day.isToday ? 'today' : ''} ${day.isFuture ? 'future' : ''}"
-                 ${!day.isFuture && day.isChecked ? `onclick="UI.handleUncheckin('${id}', '${day.date}')"` : ''}>
-              <span class="day-number">${day.day}</span>
-              ${day.isChecked ? '<span class="check-mark">✓</span>' : ''}
+          <div class="progress-section">
+            <div class="progress-bar"><div class="progress-fill" style="width: ${stats.progress}%"></div></div>
+            <p class="progress-text">${stats.checkedDays >= 21 ? '🎉 挑战完成！' : `已完成 ${stats.checkedDays}/21 天`}</p>
+          </div>
+          <div class="calendar-container">
+            <div class="calendar-header">
+              <button class="btn-calendar-nav" id="prevMonth">←</button>
+              <h3>${MONTHS[month]} ${year}</h3>
+              <button class="btn-calendar-nav" id="nextMonth" disabled>→</button>
             </div>
-          `).join('')).join('');
-        }
+            <div class="calendar-weekdays">${WEEKDAYS.map(d => `<div class="weekday">${d}</div>`).join('')}</div>
+            <div class="calendar-grid">${calendar.weeks.map(week => week.map(day => {
+              if (day === null) return `<div class="calendar-day empty"></div>`;
+              const cursor = !day.isFuture ? 'cursor:pointer;' : '';
+              return `<div class="calendar-day ${day.isChecked ? 'checked' : ''} ${day.isToday ? 'today' : ''} ${day.isFuture ? 'future' : ''}" data-date="${day.date}" data-checked="${day.isChecked}" style="${cursor}"><span class="day-number">${day.day}</span>${day.isChecked ? '<span class="check-mark">✓</span>' : ''}</div>`;
+            }).join('')).join('')}</div>
+          </div>
+          ${stats.checkedDays >= 21 ? this.renderCelebration() : ''}
+        </div>`;
+        this.getApp().innerHTML = html; this.bindDetailEvents(id);
+      },
+      renderCelebration() { return `<div class="celebration" id="celebration" style="display:none;"><div class="celebration-content"><h2>🎉</h2><p>恭喜完成21天挑战！</p><p class="celebration-sub">你已成功养成这个习惯</p></div></div>`; },
+      bindDetailEvents(id) {
+        const delBtn = document.getElementById('delBtn');
+        if (delBtn) delBtn.addEventListener('click', async () => {
+          const confirmed = await Utils.showConfirm('确定要删除这个习惯吗？删除后所有打卡记录将无法恢复。');
+          if (confirmed) { Habits.remove(id); Utils.showToast('习惯已删除'); Router.navigate('/'); }
+        });
+        document.querySelectorAll('.calendar-day[data-date]').forEach(day => {
+          if (day.classList.contains('future')) return;
+          day.addEventListener('click', async () => {
+            const date = day.dataset.date;
+            const isChecked = day.dataset.checked === 'true';
+            if (isChecked) {
+              const confirmed = await Utils.showConfirm('确定要取消这天的打卡吗？');
+              if (confirmed) { Checkin.undoCheck(id, date); this.renderDetail({ id }); }
+            } else { Habits.doCheck(id, date); Utils.showToast('打卡成功！'); this.renderDetail({ id }); }
+          });
+        });
+        const prevBtn = document.getElementById('prevMonth');
+        const nextBtn = document.getElementById('nextMonth');
+        if (prevBtn) prevBtn.addEventListener('click', () => {
+          const s = this.currentCalendarState;
+          let nm = s.month - 1, ny = s.year;
+          if (nm < 0) { nm = 11; ny--; }
+          this.updateCalendar(id, ny, nm);
+        });
+        if (nextBtn) nextBtn.addEventListener('click', () => {
+          const s = this.currentCalendarState;
+          const now = new Date();
+          if (s.year < now.getFullYear() || (s.year === now.getFullYear() && s.month < now.getMonth()) {
+            let nm = s.month + 1, ny = s.year;
+            if (nm > 11) { nm = 0; ny++; }
+            this.updateCalendar(id, ny, nm);
+          }
+        });
+      },
+      updateCalendar(id, year, month) {
+        this.currentCalendarState = { id, year, month };
+        const calendar = Checkin.getMonthCalendar(id, year, month);
         const header = document.querySelector('.calendar-header h3');
         if (header) header.textContent = `${MONTHS[month]} ${year}`;
-      },
-      handleUncheckin(id, date) {
-        showConfirm('确定要取消这天的打卡吗？').then(confirmed => {
-          if (confirmed) {
-            CheckinLogic.uncheckin(id, date);
-            this.renderDetail(id);
-          }
-        });
-      },
-      handleDelete(id) {
-        showConfirm('确定要删除这个习惯吗？删除后所有打卡记录将无法恢复。').then(confirmed => {
-          if (confirmed) {
-            HabitManager.removeHabit(id);
-            showToast('习惯已删除');
-            this.renderHome();
-          }
-        });
-      },
-      renderAddEdit(id = null) {
-        const habit = id ? HabitManager.getHabit(id) : null;
-        const isEdit = habit !== null;
-        const html = `
-          <div class="page form-page">
-            <header class="header">
-              <button class="btn-back" onclick="${id ? `UI.renderDetail('${id}')` : 'UI.renderHome()'}">←</button>
-              <h1 class="header-title">${isEdit ? '编辑习惯' : '添加习惯'}</h1>
-              <div class="header-spacer"></div>
-            </header>
-            <form class="form" onsubmit="event.preventDefault(); UI.handleFormSubmit('${id || ''}')">
-              <div class="form-group">
-                <label class="form-label">习惯名称</label>
-                <input type="text" class="form-input" id="habitName" value="${isEdit ? habit.name : ''}" placeholder="例如：每日健身" maxlength="20" required>
-              </div>
-              <div class="form-group">
-                <label class="form-label">选择图标</label>
-                <div class="icon-grid" id="iconGrid">
-                  ${ICONS.map(icon => `<button type="button" class="icon-option ${isEdit && habit.icon === icon ? 'selected' : ''}" onclick="UI.selectIcon('${icon}')">${icon}</button>`).join('')}
-                </div>
-                <input type="hidden" id="selectedIcon" value="${isEdit ? habit.icon : ICONS[0]}">
-              </div>
-              <button type="submit" class="btn btn-primary btn-block">${isEdit ? '保存修改' : '创建习惯'}</button>
-            </form>
-          </div>
-        `;
-        this.getApp().innerHTML = html;
-      },
-      selectIcon(icon) {
-        document.querySelectorAll('.icon-option').forEach(b => b.classList.remove('selected'));
-        document.querySelector(`[onclick="UI.selectIcon('${icon}')"]`).classList.add('selected');
-        document.getElementById('selectedIcon').value = icon;
-      },
-      handleFormSubmit(id) {
-        const name = document.getElementById('habitName').value.trim();
-        const icon = document.getElementById('selectedIcon').value;
-        if (!name) { showToast('请输入习惯名称'); return; }
-        if (id) {
-          HabitManager.updateHabit(id, { name, icon });
-          showToast('修改成功');
-          this.renderDetail(id);
-        } else {
-          HabitManager.addHabit(name, icon);
-          showToast('习惯创建成功');
-          this.renderHome();
+        const nextBtn = document.getElementById('nextMonth');
+        const now = new Date();
+        if (nextBtn) nextBtn.disabled = year === now.getFullYear() && month === now.getMonth();
+        const grid = document.querySelector('.calendar-grid');
+        if (grid) {
+          grid.innerHTML = calendar.weeks.map(week => week.map(day => {
+            if (day === null) return `<div class="calendar-day empty"></div>`;
+            const cursor = !day.isFuture ? 'cursor:pointer;' : '';
+            return `<div class="calendar-day ${day.isChecked ? 'checked' : ''} ${day.isToday ? 'today' : ''} ${day.isFuture ? 'future' : ''}" data-date="${day.date}" data-checked="${day.isChecked}" style="${cursor}"><span class="day-number">${day.day}</span>${day.isChecked ? '<span class="check-mark">✓</span>' : ''}</div>`;
+          }).join('')).join('');
         }
+        document.querySelectorAll('.calendar-day[data-date]').forEach(day => {
+          if (day.classList.contains('future')) return;
+          day.addEventListener('click', async () => {
+            const date = day.dataset.date;
+            const isChecked = day.dataset.checked === 'true';
+            if (isChecked) {
+              const confirmed = await Utils.showConfirm('确定要取消这天的打卡吗？');
+              if (confirmed) { Checkin.undoCheck(id, date); this.renderDetail({ id }); }
+            } else { Habits.doCheck(id, date); Utils.showToast('打卡成功！'); this.renderDetail({ id }); }
+          });
+        });
+      },
+      renderAddEdit(params) {
+        const id = params.id;
+        const habit = id ? Habits.get(id) : null;
+        const isEdit = habit !== null;
+        const selectedIcon = isEdit ? habit.icon : ICONS[0];
+        const html = `
+        <div class="page form-page">
+          <header class="header">
+            <button class="btn-back" onclick="location.hash='${id ? '/detail/' + id : '/'}'">←</button>
+            <h1 class="header-title">${isEdit ? '编辑习惯' : '添加习惯'}</h1>
+            <div class="header-spacer"></div>
+          </header>
+          <form class="form" id="habitForm">
+            <div class="form-group"><label class="form-label">习惯名称</label>
+              <input type="text" class="form-input" id="habitName" value="${isEdit ? habit.name : ''}" placeholder="例如：每日健身" maxlength="20" required></div>
+            <div class="form-group"><label class="form-label">选择图标</label>
+              <div class="icon-grid" id="iconGrid">${ICONS.map(icon => `<button type="button" class="icon-option ${icon === selectedIcon ? 'selected' : ''}" data-icon="${icon}">${icon}</button>`).join('')}</div>
+              <input type="hidden" id="selectedIcon" value="${selectedIcon}"></div>
+            <button type="submit" class="btn btn-primary btn-block">${isEdit ? '保存修改' : '创建习惯'}</button>
+          </form>
+        </div>`;
+        this.getApp().innerHTML = html; this.bindFormEvents(id);
+      },
+      bindFormEvents(id) {
+        document.querySelectorAll('.icon-option').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.icon-option').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            document.getElementById('selectedIcon').value = btn.dataset.icon;
+          });
+        });
+        const form = document.getElementById('habitForm');
+        if (form) form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const name = document.getElementById('habitName').value.trim();
+          const icon = document.getElementById('selectedIcon').value;
+          if (!name) { Utils.showToast('请输入习惯名称'); return; }
+          if (id) { Habits.update(id, { name, icon }); Utils.showToast('修改成功'); Router.navigate('/detail/' + id); }
+          else { Habits.add(name, icon); Utils.showToast('习惯创建成功'); Router.navigate('/'); }
+        });
       },
       renderSettings() {
         const html = `
-          <div class="page settings-page">
-            <header class="header">
-              <button class="btn-back" onclick="UI.renderHome()">←</button>
-              <h1 class="header-title">设置</h1>
-              <div class="header-spacer"></div>
-            </header>
-            <div class="settings-list">
-              <div class="settings-group">
-                <h3 class="settings-group-title">数据管理</h3>
-                <div class="settings-item">
-                  <div class="settings-item-info">
-                    <span class="settings-icon">📤</span>
-                    <div>
-                      <p class="settings-item-title">导出数据</p>
-                      <p class="settings-item-desc">将所有习惯数据导出为JSON文件</p>
-                    </div>
-                  </div>
-                  <button class="btn btn-outline" onclick="UI.handleExport()">导出</button>
-                </div>
-                <div class="settings-item">
-                  <div class="settings-item-info">
-                    <span class="settings-icon">📥</span>
-                    <div>
-                      <p class="settings-item-title">导入数据</p>
-                      <p class="settings-item-desc">从JSON文件恢复数据</p>
-                    </div>
-                  </div>
-                  <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">导入</button>
-                  <input type="file" id="importFile" accept=".json" style="display:none" onchange="UI.handleImport(event)">
-                </div>
+        <div class="page settings-page">
+          <header class="header">
+            <button class="btn-back" onclick="location.hash='/'">←</button>
+            <h1 class="header-title">设置</h1>
+            <div class="header-spacer"></div>
+          </header>
+          <div class="settings-list">
+            <div class="settings-group">
+              <h3 class="settings-group-title">数据管理</h3>
+              <div class="settings-item">
+                <div class="settings-item-info"><span class="settings-icon">📤</span>
+                  <div><p class="settings-item-title">导出数据</p><p class="settings-item-desc">将所有习惯数据导出为JSON文件</p></div></div>
+                <button class="btn btn-outline" id="exportBtn">导出</button>
               </div>
-              <div class="settings-group">
-                <h3 class="settings-group-title">关于</h3>
-                <div class="settings-item about">
-                  <p class="app-name">21+ 打卡APP</p>
-                  <p class="app-version">版本 1.0.0</p>
-                  <p class="app-desc">帮助您坚持21天养成好习惯</p>
-                </div>
+              <div class="settings-item">
+                <div class="settings-item-info"><span class="settings-icon">📥</span>
+                  <div><p class="settings-item-title">导入数据</p><p class="settings-item-desc">从JSON文件恢复数据</p></div></div>
+                <button class="btn btn-outline" id="importBtn">导入</button>
+                <input type="file" id="importFile" accept=".json" style="display:none;">
               </div>
             </div>
-            <nav class="bottom-nav">
-              <button class="nav-btn" onclick="UI.renderHome()">
-                <span class="nav-icon">🏠</span> <span>首页</span>
-              </button>
-              <button class="nav-btn active">
-                <span class="nav-icon">⚙️</span> <span>设置</span>
-              </button>
-            </nav>
+            <div class="settings-group">
+              <h3 class="settings-group-title">关于</h3>
+              <div class="settings-item about">
+                <p class="app-name">21+ 打卡APP</p>
+                <p class="app-version">版本 1.0.0</p>
+                <p class="app-desc">帮助您坚持21天养成好习惯 - 坚持就是胜利！</p>
+              </div>
+            </div>
           </div>
-        `;
-        this.getApp().innerHTML = html;
+          <nav class="bottom-nav">
+            <button class="nav-btn" onclick="location.hash='/'"><span class="nav-icon">🏠</span><span>首页</span></button>
+            <button class="nav-btn active"><span class="nav-icon">⚙️</span><span>设置</span></button>
+          </nav>
+        </div>`;
+        this.getApp().innerHTML = html; this.bindSettingsEvents();
       },
-      handleExport() {
-        const data = StorageService.exportData();
-        const blob = new Blob([data], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `21plus-backup-${formatDate(new Date())}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-        showToast('数据已导出');
-      },
-      handleImport(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = StorageService.importData(e.target.result);
-          if (result.success) {
-            showToast(`成功导入 ${result.count} 个习惯`);
-            this.renderHome();
-          } else {
-            showToast('导入失败: ' + result.error);
-          }
-        };
-        reader.readAsText(file);
+      bindSettingsEvents() {
+        const exportBtn = document.getElementById('exportBtn');
+        if (exportBtn) exportBtn.addEventListener('click', () => {
+          const data = Storage.exportData();
+          const blob = new Blob([data], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = `21plus-backup-${Utils.getToday()}.json`; a.click();
+          URL.revokeObjectURL(url);
+          Utils.showToast('数据已导出');
+        });
+        const importBtn = document.getElementById('importBtn');
+        const importFile = document.getElementById('importFile');
+        if (importBtn && importFile) {
+          importBtn.addEventListener('click', () => importFile.click());
+          importFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+              const result = Storage.importData(ev.target.result);
+              if (result.success) { Utils.showToast(`成功导入 ${result.count} 个习惯`); Router.navigate('/'); }
+              else Utils.showToast('导入失败: ' + result.error);
+            };
+            reader.readAsText(file);
+          });
+        }
       }
     };
-
-    class Router {
-      constructor() {
-        this.routes = new Map();
-        window.addEventListener('hashchange', () => this.handleRoute());
-        window.addEventListener('load', () => this.handleRoute());
+    const App = {
+      init() {
+        Router.register('/', () => UI.renderHome());
+        Router.register('/detail/:id', (params) => UI.renderDetail(params));
+        Router.register('/add', () => UI.renderAddEdit({}));
+        Router.register('/edit/:id', (params) => UI.renderAddEdit(params));
+        Router.register('/settings', () => UI.renderSettings());
+        Router.init();
+        console.log('21+ 打卡APP 已启动 🚀');
       }
-      register(path, handler) { this.routes.set(path, handler); }
-      navigate(path) { window.location.hash = path; }
-      handleRoute() {
-        const hash = window.location.hash.slice(1) || '/';
-        if (this.routes.has(hash)) { this.routes.get(hash)(); return; }
-        if (hash.startsWith('/detail/')) { UI.renderDetail(hash.split('/')[2]); return; }
-        if (hash.startsWith('/edit/')) { UI.renderAddEdit(hash.split('/')[2]); return; }
-        this.navigate('/');
-      }
-    }
-
-    const router = new Router();
-    router.register('/', () => UI.renderHome());
-    router.register('/add', () => UI.renderAddEdit());
-    router.register('/settings', () => UI.renderSettings());
-    console.log('21+ 打卡APP 已启动');
+    };
+    document.addEventListener('DOMContentLoaded', () => App.init());
+    if (document.readyState !== 'loading') App.init();
   </script>
 </body>
 </html>
