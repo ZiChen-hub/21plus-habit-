@@ -94,6 +94,14 @@
     }
     .btn-checkin:hover { border-color: var(--accent); }
     .btn-checkin.checked { background: var(--success); border-color: var(--success); color: var(--primary); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-calendar-nav:disabled { opacity: 0.3; cursor: not-allowed; }
+    @keyframes checkPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    .check-pulse { animation: checkPulse 0.3s ease; }
     .btn-back {
       background: var(--bg-card); border: none; color: var(--text-primary);
       width: 40px; height: 40px; border-radius: 12px; font-size: 20px; cursor: pointer;
@@ -218,6 +226,7 @@
     .install-title { font-size: 14px; font-weight: 600; }
     .install-desc { font-size: 11px; color: var(--text-secondary); }
     .btn-install { background: var(--accent); color: white; padding: 8px 16px; border-radius: 8px; font-size: 14px; border: none; cursor: pointer; }
+    .btn-close-install { background: transparent; border: none; color: var(--text-secondary); font-size: 18px; cursor: pointer; padding: 4px; }
     @media (max-width: 380px) {
       .habit-card { flex-wrap: wrap; }
       .habit-progress-ring { order: -1; width: 40px; height: 40px; }
@@ -229,7 +238,11 @@
   </style>
 </head>
 <body>
-  <div id="app"></div>
+  <div id="app">
+    <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#94a3b8;font-size:14px">
+      加载中...
+    </div>
+  </div>
   <div class="install-banner hidden" id="installBanner">
     <span class="install-icon">📱</span>
     <div class="install-info">
@@ -237,6 +250,7 @@
       <p class="install-desc">获得全屏体验</p>
     </div>
     <button class="btn-install" id="installBtn">添加</button>
+    <button class="btn-close-install" id="closeInstall">✕</button>
   </div>
 
   <script>
@@ -286,11 +300,17 @@
             </div>
           `;
           document.body.appendChild(overlay);
-          const handleClick = (e) => {
-            const action = e.target.dataset.action;
-            if (action) { overlay.remove(); resolve(action === 'confirm'); }
+          const cancelBtn = overlay.querySelector('.btn-cancel');
+          const confirmBtn = overlay.querySelector('.btn-confirm');
+          const cleanup = () => {
+            overlay.remove();
+            cancelBtn.removeEventListener('click', handleCancel);
+            confirmBtn.removeEventListener('click', handleConfirm);
           };
-          document.addEventListener('click', handleClick, { once: true });
+          const handleCancel = () => { cleanup(); resolve(false); };
+          const handleConfirm = () => { cleanup(); resolve(true); };
+          cancelBtn.addEventListener('click', handleCancel);
+          confirmBtn.addEventListener('click', handleConfirm);
         });
       }
     };
@@ -309,13 +329,7 @@
         } catch (e) { console.error('加载失败', e); return this.initDefault(); }
       },
       initDefault() {
-        const defaults = [
-          { id: 'default_1', name: '每日健身', icon: '💪', createdAt: Utils.getToday(), checkinDates: [] },
-          { id: 'default_2', name: '早起阅读', icon: '📚', createdAt: Utils.getToday(), checkinDates: [] },
-          { id: 'default_3', name: '多喝水', icon: '💧', createdAt: Utils.getToday(), checkinDates: [] }
-        ];
-        this.save(defaults);
-        return defaults;
+        return [];
       },
       exportData() {
         return JSON.stringify({ version: '1.0', exportDate: new Date().toISOString(), habits: this.load() }, null, 2);
@@ -383,17 +397,25 @@
         const today = Utils.getToday();
         const sorted = [...habit.checkinDates].sort().reverse();
         let streak = 0;
-        let currentDate = sorted[0] === today ? new Date() : Utils.addDays(new Date(), -1);
+        let currentDate = new Date();
+        if (sorted[0] !== today) {
+          currentDate = Utils.addDays(currentDate, -1);
+        }
         for (const dateStr of sorted) {
           const expected = Utils.formatDate(currentDate);
-          if (dateStr === expected) { streak++; currentDate = Utils.addDays(currentDate, -1); }
-          else if (dateStr < expected) break;
+          if (dateStr === expected) {
+            streak++;
+            currentDate = Utils.addDays(currentDate, -1);
+          } else if (dateStr < expected) {
+            break;
+          }
         }
         return streak;
       },
       getProgress(habit) {
         const today = Utils.getToday();
-        const startDate = habit.createdAt;
+        const todayDate = new Date();
+        const startDate = Utils.formatDate(Utils.addDays(todayDate, -20));
         const checkedDays = habit.checkinDates.filter(d => d >= startDate && d <= today).length;
         const progress = Math.min((checkedDays / 21) * 100, 100);
         return { checkedDays, progress, remaining: Math.max(0, 21 - checkedDays) };
@@ -438,14 +460,14 @@
         const hash = window.location.hash.slice(1) || '/';
         const [path, query] = hash.split('?');
         const params = {};
-        if (query) query.split('&').forEach(p => { const [k, v] = p.split('='); params[k] = decodeURIComponent(v); });
-        
+        if (query) query.split('&').forEach(p => { const [k, v] = p.split('='); params[k] = decodeURIComponent(v || ''); });
         const matched = this.matchRoute(path);
         if (matched) {
           const handler = this.routes.get(matched.route);
           if (handler) handler({ ...params, ...matched.params });
         } else {
-          this.navigate('/');
+          const defHandler = this.routes.get('/');
+          if (defHandler) defHandler(params);
         }
       },
       matchRoute(path) {
@@ -465,7 +487,6 @@
       },
       init() {
         window.addEventListener('hashchange', () => this.handle());
-        window.addEventListener('load', () => this.handle());
       }
     };
 
@@ -484,7 +505,13 @@
               <p class="subtitle">坚持21天，养成好习惯</p>
             </div>
             <div class="habit-list">
-              ${habits.map(h => this.renderCard(h, today)).join('')}
+              ${habits.length === 0 ? `
+                <div class="empty-state">
+                  <div class="empty-icon">🌱</div>
+                  <h3>还没有习惯</h3>
+                  <p>点击下方按钮添加第一个习惯<br>开启21天挑战之旅</p>
+                </div>
+              ` : habits.map(h => this.renderCard(h, today)).join('')}
             </div>
             <div class="bottom-actions">
               <button class="btn btn-add" id="addBtn">+ 添加习惯</button>
@@ -497,19 +524,23 @@
         `;
         document.getElementById('app').innerHTML = html;
         this.bindHomeEvents();
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+          });
+        });
       },
       renderCard(habit, today) {
         const isChecked = Habits.hasChecked(habit, today);
         const streak = Habits.getStreak(habit);
         const progress = Habits.getProgress(habit);
         return `
-          <div class="habit-card">
-            <div class="habit-info" onclick="location.hash='#/detail/${habit.id}'">
-              <div class="habit-icon">${habit.icon}</div>
-              <div class="habit-details">
-                <h3 class="habit-name">${habit.name}</h3>
-                <p class="habit-streak">连续 ${streak} 天</p>
-              </div>
+          <div class="habit-card" onclick="location.hash='#/detail/${habit.id}'">
+            <div class="habit-icon">${habit.icon}</div>
+            <div class="habit-details">
+              <h3 class="habit-name">${habit.name}</h3>
+              <p class="habit-streak">连续 ${streak} 天</p>
             </div>
             <div class="habit-progress-ring">
               <svg viewBox="0 0 36 36">
@@ -518,7 +549,7 @@
               </svg>
               <span class="ring-text">${Math.round(progress.progress)}%</span>
             </div>
-            <button class="btn-checkin ${isChecked ? 'checked' : ''}" data-id="${habit.id}">${isChecked ? '✓' : '打卡'}</button>
+            <button class="btn-checkin ${isChecked ? 'checked' : ''}" data-id="${habit.id}" onclick="event.stopPropagation()">${isChecked ? '✓' : '打卡'}</button>
           </div>
         `;
       },
@@ -529,6 +560,8 @@
             e.stopPropagation();
             const result = Checkin.doCheck(btn.dataset.id);
             if (result.success) {
+              if (navigator.vibrate) navigator.vibrate(50);
+              btn.classList.add('check-pulse');
               Utils.showToast(result.isCompleted ? '🎉 恭喜完成21天挑战！' : `打卡成功！连续 ${result.streak} 天`);
               this.renderHome();
             } else {
@@ -542,12 +575,12 @@
         if (!habit) { Router.navigate('/'); return; }
         const stats = Checkin.getStats(params.id);
         const now = new Date();
-        const calendar = this.getCalendar(now.getFullYear(), now.getMonth());
+        const calendar = this.getCalendar(now.getFullYear(), now.getMonth(), params.id);
         const html = `
           <div class="page">
             <div class="header">
               <button class="btn-back" onclick="location.hash='/'">←</button>
-              <div class="header-content">
+              <div class="header-content" onclick="location.hash='/'">
                 <span class="header-icon">${habit.icon}</span>
                 <h1 class="header-title">${habit.name}</h1>
               </div>
@@ -566,38 +599,128 @@
               <p class="progress-text">${stats.checkedDays >= 21 ? '🎉 挑战完成！' : `已完成 ${stats.checkedDays}/21 天`}</p>
             </div>
             <div style="background: #1f2937; border-radius: 14px; padding: 14px;">
-              <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                <button class="btn-back" style="width:36px;height:36px;font-size:14px" id="prevMonth">←</button>
-                <h3 style="font-size:15px;font-weight:600">${MONTHS[now.getMonth()]} ${now.getFullYear()}</h3>
-                <div style="width:36px"></div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <button class="btn-icon-only btn-calendar-nav" style="width:36px;height:36px;font-size:14px" id="prevMonth">←</button>
+                <h3 style="font-size:15px;font-weight:600" id="calendarTitle">${MONTHS[now.getMonth()]} ${now.getFullYear()}</h3>
+                <button class="btn-icon-only btn-calendar-nav" style="width:36px;height:36px;font-size:14px" id="nextMonth">→</button>
               </div>
               <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px">
                 ${WEEKDAYS.map(d => `<div style="text-align:center;font-size:11px;color:#94a3b8">${d}</div>`).join('')}
               </div>
-              <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
-                ${calendar.map(day => day === null ? '<div></div>' : `<div style="aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:13px;background:${day.checked ? '#4ade80' : 'rgba(255,255,255,0.05)'} ${day.today ? ';border:2px solid #ff6b35' : ''}" data-date="${day.date}">${day.day}${day.checked ? '✓' : ''}</div>`).join('')}
+              <div class="calendar-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+                ${calendar.map(day => {
+                  if (day === null) return '<div></div>';
+                  const bg = day.checked ? 'background: #4ade80; color: #1a1a2e' : 'background: rgba(255,255,255,0.05)';
+                  const border = day.today ? 'border: 2px solid #ff6b35' : 'border: 2px solid transparent';
+                  const clickable = !day.checked && !day.future;
+                  return `<div style="aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;font-size:13px;${bg};${border};cursor:${clickable ? 'pointer' : 'default'};" data-date="${day.date}" data-id="${params.id}" data-future="${day.future}">
+                    ${day.day}${day.checked ? '<span style="font-size:8px">✓</span>' : ''}
+                  </div>`;
+                }).join('')}
               </div>
             </div>
           </div>
         `;
         document.getElementById('app').innerHTML = html;
         document.getElementById('delBtn').addEventListener('click', async () => {
-          if (await Utils.showConfirm('确定要删除吗？')) {
+          if (await Utils.showConfirm('确定要删除这个习惯吗？删除后所有打卡记录将无法恢复。')) {
             Habits.remove(params.id);
-            Utils.showToast('已删除');
+            Utils.showToast('习惯已删除');
             Router.navigate('/');
           }
         });
+        document.querySelectorAll('[data-date][data-id]').forEach(el => {
+          const date = el.dataset.date;
+          const habitId = el.dataset.id;
+          const habit2 = Habits.get(habitId);
+          if (habit2 && Habits.hasChecked(habit2, date)) {
+            el.addEventListener('click', async () => {
+              if (await Utils.showConfirm('确定要取消这天的打卡吗？')) {
+                Checkin.undoCheck(habitId, date);
+                this.renderDetail(params);
+              }
+            });
+          } else if (habit2 && !el.dataset.future) {
+            el.addEventListener('click', () => {
+              Habits.doCheck(habitId, date);
+              Utils.showToast('打卡成功！');
+              this.renderDetail(params);
+            });
+          }
+        });
+        const calendarState = { year: now.getFullYear(), month: now.getMonth() };
+        const prevBtn = document.getElementById('prevMonth');
+        const nextBtn = document.getElementById('nextMonth');
+        if (nextBtn) nextBtn.disabled = true;
+        prevBtn.addEventListener('click', () => {
+          calendarState.month--;
+          if (calendarState.month < 0) { calendarState.month = 11; calendarState.year--; }
+          this.updateCalendar(params.id, calendarState.year, calendarState.month);
+        });
+        nextBtn.addEventListener('click', () => {
+          const today = new Date();
+          if (calendarState.year < today.getFullYear() || (calendarState.year === today.getFullYear() && calendarState.month < today.getMonth())) {
+            calendarState.month++;
+            if (calendarState.month > 11) { calendarState.month = 0; calendarState.year++; }
+            this.updateCalendar(params.id, calendarState.year, calendarState.month);
+          }
+        });
       },
-      getCalendar(year, month) {
+      updateCalendar(habitId, year, month) {
+        const calendar = this.getCalendar(year, month, habitId);
+        const title = document.getElementById('calendarTitle');
+        if (title) title.textContent = `${MONTHS[month]} ${year}`;
+        const prevBtn = document.getElementById('prevMonth');
+        const nextBtn = document.getElementById('nextMonth');
+        const today = new Date();
+        if (prevBtn) prevBtn.disabled = false;
+        if (nextBtn) {
+          nextBtn.disabled = (year >= today.getFullYear() && month >= today.getMonth());
+        }
+        const grid = document.querySelector('.calendar-grid');
+        if (grid) {
+          grid.innerHTML = calendar.map(day => {
+            if (day === null) return '<div></div>';
+            const bg = day.checked ? 'background: #4ade80; color: #1a1a2e' : 'background: rgba(255,255,255,0.05)';
+            const border = day.today ? 'border: 2px solid #ff6b35' : 'border: 2px solid transparent';
+            const clickable = !day.checked && !day.future;
+            return `<div style="aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;font-size:13px;${bg};${border};cursor:${clickable ? 'pointer' : 'default'};" data-date="${day.date}" data-id="${habitId}" data-future="${day.future}">
+              ${day.day}${day.checked ? '<span style="font-size:8px">✓</span>' : ''}
+            </div>`;
+          }).join('');
+          grid.querySelectorAll('[data-date]').forEach(el => {
+            const date = el.dataset.date;
+            const habitData = Habits.get(habitId);
+            if (habitData && Habits.hasChecked(habitData, date)) {
+              el.addEventListener('click', async () => {
+                if (await Utils.showConfirm('确定要取消这天的打卡吗？')) {
+                  Checkin.undoCheck(habitId, date);
+                  this.renderDetail({ id: habitId });
+                }
+              });
+            } else if (habitData && el.dataset.future !== 'true') {
+              el.addEventListener('click', () => {
+                Habits.doCheck(habitId, date);
+                Utils.showToast('打卡成功！');
+                this.renderDetail({ id: habitId });
+              });
+            }
+          });
+        }
+      },
+      getCalendar(year, month, habitId) {
         const firstDay = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         const today = Utils.getToday();
         const result = [];
+        const habit = habitId ? Habits.get(habitId) : null;
         for (let i = 0; i < firstDay; i++) result.push(null);
         for (let day = 1; day <= daysInMonth; day++) {
           const date = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-          result.push({ day, date, checked: false, today: date === today });
+          const isChecked = habit ? Habits.hasChecked(habit, date) : false;
+          const isToday = date === today;
+          const isFuture = date > today;
+          result.push({ day, date, checked: isChecked, today: isToday, future: isFuture });
         }
         return result;
       },
@@ -678,6 +801,13 @@
                   <button class="btn btn-outline" id="importBtn">导入</button>
                   <input type="file" id="importFile" accept=".json" style="display:none">
                 </div>
+                <div class="settings-item">
+                  <div class="settings-item-info">
+                    <span class="settings-icon">🗑️</span>
+                    <div><p class="settings-item-title">清空所有数据</p><p class="settings-item-desc">删除所有习惯和记录</p></div>
+                  </div>
+                  <button class="btn btn-outline" id="clearAllBtn" style="border-color: #ef4444; color: #ef4444;">清空</button>
+                </div>
               </div>
               <div>
                 <h3 class="settings-group-title">关于</h3>
@@ -711,10 +841,17 @@
           const reader = new FileReader();
           reader.onload = (ev) => {
             const result = Storage.importData(ev.target.result);
-            if (result.success) { Utils.showToast(`导入 ${result.count} 个习惯`); Router.navigate('/'); }
+            if (result.success) { Utils.showToast(`成功导入 ${result.count} 个习惯`); Router.navigate('/'); }
             else Utils.showToast('导入失败: ' + result.error);
           };
           reader.readAsText(file);
+        });
+        document.getElementById('clearAllBtn').addEventListener('click', async () => {
+          if (await Utils.showConfirm('确定要清空所有数据吗？此操作不可恢复！')) {
+            localStorage.removeItem(Storage.KEY);
+            Utils.showToast('所有数据已清空');
+            Router.navigate('/');
+          }
         });
       }
     };
@@ -722,32 +859,41 @@
     let installPrompt;
     window.addEventListener('beforeinstallprompt', (e) => {
       installPrompt = e;
-      document.getElementById('installBanner').classList.remove('hidden');
+      const banner = document.getElementById('installBanner');
+      if (banner) banner.classList.remove('hidden');
     });
 
-    document.getElementById('installBtn').addEventListener('click', () => {
-      if (installPrompt) {
-        installPrompt.prompt();
-        installPrompt.userChoice.then(choice => {
-          if (choice.outcome === 'accepted') {
-            document.getElementById('installBanner').classList.add('hidden');
+    const initInstallBtn = () => {
+      const installBtn = document.getElementById('installBtn');
+      if (installBtn) {
+        installBtn.addEventListener('click', () => {
+          if (installPrompt) {
+            installPrompt.prompt();
+            installPrompt.userChoice.then(() => {
+              document.getElementById('installBanner').classList.add('hidden');
+            });
+          } else {
+            Utils.showToast('请手动添加到主屏幕');
           }
         });
       }
-    });
+      const closeBtn = document.getElementById('closeInstall');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+          document.getElementById('installBanner').classList.add('hidden');
+        });
+      }
+    };
 
     Router.routes.set('/', () => UI.renderHome());
     Router.routes.set('/detail/:id', (params) => UI.renderDetail(params));
     Router.routes.set('/add', () => UI.renderAddEdit({}));
     Router.routes.set('/edit/:id', (params) => UI.renderAddEdit(params));
     Router.routes.set('/settings', () => UI.renderSettings());
-    Router.init();
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => Router.handle());
-    } else {
-      Router.handle();
-    }
+    Router.init();
+    initInstallBtn();
+    Router.handle();
   </script>
 </body>
 </html>
